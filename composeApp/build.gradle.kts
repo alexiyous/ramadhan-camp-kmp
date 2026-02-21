@@ -56,6 +56,7 @@ kotlin {
     sourceSets {
         androidMain.dependencies {
             api(libs.compose.uiToolingPreview)
+            implementation(libs.compose.uiTooling)
             api(libs.androidx.activity.compose)
         }
         commonMain.dependencies {
@@ -67,6 +68,8 @@ kotlin {
             api(libs.compose.uiToolingPreview)
             api(libs.androidx.lifecycle.viewmodelCompose)
             api(libs.androidx.lifecycle.runtimeCompose)
+            implementation(libs.constraintlayout.compose.multiplatform)
+            implementation(libs.material.icons.extended)
 
             implementation(projects.shared)
             implementation(projects.core.data)
