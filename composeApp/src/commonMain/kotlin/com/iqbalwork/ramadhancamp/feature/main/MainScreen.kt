@@ -6,6 +6,7 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -13,9 +14,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
@@ -50,30 +53,43 @@ fun MainScreen(navController: AppNavigationController) {
             }
         },
     ) { innerPadding ->
-        NavDisplay(
-            backStack = navController.tabBackStacks[currentTab]!!,
-            modifier = Modifier.padding(innerPadding),
-            sceneStrategy = bottomSheetStrategy,
-            entryDecorators = listOf(
-                rememberSaveableStateHolderNavEntryDecorator(),
-                rememberViewModelStoreNavEntryDecorator(),
-            ),
-            transitionSpec = { slideInHorizontally { it } togetherWith slideOutHorizontally { -it } },
-            popTransitionSpec = { slideInHorizontally { -it } togetherWith slideOutHorizontally { it } },
-            entryProvider = entryProvider {
-                entry<TabDestination.HomeMain> { HomeMainScreen() }
-                entry<TabDestination.HomeDetail> { HomeDetailScreen() }
-                entry<TabDestination.PrayMain> { PlaceholderTabScreen("Pray") }
-                entry<TabDestination.QuranMain> { PlaceholderTabScreen("Quran") }
-                entry<TabDestination.QiblaMain> { PlaceholderTabScreen("Qibla") }
-                entry<TabDestination.BookmarkMain> { PlaceholderTabScreen("Bookmark") }
-                entry<DialogDestination.SampleDialog>(
-                    metadata = BottomSheetSceneStrategy.bottomSheet(),
-                ) {
-                    SampleDialogScreen(onDismiss = { navController.hideDialog() })
+        Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+            AppTab.entries.forEach { tab ->
+                key(tab) {
+                    val isActive = currentTab == tab
+                    NavDisplay(
+                        backStack = navController.tabBackStacks[tab]!!,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .then(if (!isActive) Modifier.requiredSize(0.dp) else Modifier),
+                        sceneStrategy = bottomSheetStrategy,
+                        entryDecorators = listOf(
+                            rememberSaveableStateHolderNavEntryDecorator(),
+                            rememberViewModelStoreNavEntryDecorator(),
+                        ),
+                        transitionSpec = { slideInHorizontally { it } togetherWith slideOutHorizontally { -it } },
+                        popTransitionSpec = { slideInHorizontally { -it } togetherWith slideOutHorizontally { it } },
+                        entryProvider = entryProvider {
+                            when (tab) {
+                                AppTab.Home -> {
+                                    entry<TabDestination.HomeMain> { HomeMainScreen() }
+                                    entry<TabDestination.HomeDetail> { HomeDetailScreen() }
+                                }
+                                AppTab.Pray     -> entry<TabDestination.PrayMain>     { PlaceholderTabScreen("Pray") }
+                                AppTab.Quran    -> entry<TabDestination.QuranMain>    { PlaceholderTabScreen("Quran") }
+                                AppTab.Qibla    -> entry<TabDestination.QiblaMain>    { PlaceholderTabScreen("Qibla") }
+                                AppTab.Bookmark -> entry<TabDestination.BookmarkMain> { PlaceholderTabScreen("Bookmark") }
+                            }
+                            entry<DialogDestination.SampleDialog>(
+                                metadata = BottomSheetSceneStrategy.bottomSheet(),
+                            ) {
+                                SampleDialogScreen(onDismiss = { navController.hideDialog() })
+                            }
+                        },
+                    )
                 }
-            },
-        )
+            }
+        }
     }
 }
 

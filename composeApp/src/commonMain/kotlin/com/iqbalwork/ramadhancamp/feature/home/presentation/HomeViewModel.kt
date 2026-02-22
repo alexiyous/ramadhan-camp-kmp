@@ -5,12 +5,14 @@ import com.iqbalwork.ramadhancamp.shared.common.navigation.AppNavigationControll
 import com.iqbalwork.ramadhancamp.shared.common.navigation.AppTab
 import com.iqbalwork.ramadhancamp.shared.common.navigation.DialogDestination
 import com.iqbalwork.ramadhancamp.shared.common.navigation.TabDestination
+import io.github.aakira.napier.log
 
 class HomeViewModel(
     private val navHolder: AppNavigationControllerHolder,
 ) : ViewModel() {
 
     fun navigateToDetail() {
+        log { "${navHolder.get().hashCode()}" }
         navHolder.get().navigateToInsideTab(TabDestination.HomeDetail)
     }
 

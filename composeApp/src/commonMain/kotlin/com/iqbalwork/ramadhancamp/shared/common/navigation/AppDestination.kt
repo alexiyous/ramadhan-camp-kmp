@@ -42,6 +42,10 @@ sealed interface TabDestination : NavKey {
     // Bookmark Level
     @Serializable
     data object BookmarkMain : TabDestination
+
+    // Home Detail
+    @Serializable
+    data object HomeDetail : TabDestination
 }
 
 // Dialog Navigation (bottom sheet, dialog, etc.)
@@ -63,6 +67,7 @@ val appSavedStateConfig = SavedStateConfiguration {
             subclass(TabDestination.QuranMain::class, TabDestination.QuranMain.serializer())
             subclass(TabDestination.QiblaMain::class, TabDestination.QiblaMain.serializer())
             subclass(TabDestination.BookmarkMain::class, TabDestination.BookmarkMain.serializer())
+            subclass(TabDestination.HomeDetail::class, TabDestination.HomeDetail.serializer())
             subclass(DialogDestination.SampleDialog::class, DialogDestination.SampleDialog.serializer())
         }
     }

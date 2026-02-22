@@ -13,6 +13,14 @@ class AppNavigationControllerHolder {
     private var controller: AppNavigationController? = null
 
     fun set(controller: AppNavigationController) {
+        if (this.controller === controller) {
+            // Already set to this instance, avoid duplicate set
+            io.github.aakira.napier.Napier.d("AppNavigationControllerHolder: set() called with same instance: ${controller.hashCode()}")
+            return
+        }
+        if (this.controller != null) {
+            io.github.aakira.napier.Napier.w("AppNavigationControllerHolder: set() called again, replacing previous instance: ${this.controller.hashCode()} with ${controller.hashCode()}")
+        }
         this.controller = controller
     }
 

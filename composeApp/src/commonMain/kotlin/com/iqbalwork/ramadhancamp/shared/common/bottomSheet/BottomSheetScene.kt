@@ -91,8 +91,7 @@ class BottomSheetSceneStrategy<T : Any>(
 ) : SceneStrategy<T> {
 
     override fun SceneStrategyScope<T>.calculateScene(entries: List<NavEntry<T>>): Scene<T>? {
-        val lastDialog = navigationController.activeDialogs.lastOrNull()
-        val lastEntry = entries.lastOrNull { it.contentKey == lastDialog }
+        val lastEntry = entries.lastOrNull()
         val bottomSheetProperties = lastEntry?.metadata?.get(BOTTOM_SHEET_KEY) as? ModalBottomSheetProperties
         return bottomSheetProperties?.let { properties ->
             @Suppress("UNCHECKED_CAST")
