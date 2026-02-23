@@ -16,7 +16,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
@@ -24,14 +23,14 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import com.iqbalwork.ramadhancamp.feature.home.presentation.HomeDetailScreen
-import com.iqbalwork.ramadhancamp.feature.home.presentation.HomeMainScreen
-import com.iqbalwork.ramadhancamp.feature.home.presentation.SampleDialogScreen
+import com.iqbalwork.ramadhancamp.feature.bookmark.bookmarkTabEntries
+import com.iqbalwork.ramadhancamp.feature.home.homeTabEntries
+import com.iqbalwork.ramadhancamp.feature.pray.prayTabEntries
+import com.iqbalwork.ramadhancamp.feature.qibla.qiblaTabEntries
+import com.iqbalwork.ramadhancamp.feature.quran.quranTabEntries
 import com.iqbalwork.ramadhancamp.shared.common.bottomSheet.BottomSheetSceneStrategy
 import com.iqbalwork.ramadhancamp.shared.common.navigation.AppNavigationController
 import com.iqbalwork.ramadhancamp.shared.common.navigation.AppTab
-import com.iqbalwork.ramadhancamp.shared.common.navigation.DialogDestination
-import com.iqbalwork.ramadhancamp.shared.common.navigation.TabDestination
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,34 +70,16 @@ fun MainScreen(navController: AppNavigationController) {
                         popTransitionSpec = { slideInHorizontally { -it } togetherWith slideOutHorizontally { it } },
                         entryProvider = entryProvider {
                             when (tab) {
-                                AppTab.Home -> {
-                                    entry<TabDestination.HomeMain> { HomeMainScreen() }
-                                    entry<TabDestination.HomeDetail> { HomeDetailScreen() }
-                                }
-                                AppTab.Pray     -> entry<TabDestination.PrayMain>     { PlaceholderTabScreen("Pray") }
-                                AppTab.Quran    -> entry<TabDestination.QuranMain>    { PlaceholderTabScreen("Quran") }
-                                AppTab.Qibla    -> entry<TabDestination.QiblaMain>    { PlaceholderTabScreen("Qibla") }
-                                AppTab.Bookmark -> entry<TabDestination.BookmarkMain> { PlaceholderTabScreen("Bookmark") }
-                            }
-                            entry<DialogDestination.SampleDialog>(
-                                metadata = BottomSheetSceneStrategy.bottomSheet(),
-                            ) {
-                                SampleDialogScreen(onDismiss = { navController.hideDialog() })
+                                AppTab.Home     -> homeTabEntries(navController)
+                                AppTab.Pray     -> prayTabEntries(navController)
+                                AppTab.Quran    -> quranTabEntries(navController)
+                                AppTab.Qibla    -> qiblaTabEntries(navController)
+                                AppTab.Bookmark -> bookmarkTabEntries(navController)
                             }
                         },
                     )
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun PlaceholderTabScreen(tabName: String) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(text = "$tabName — coming soon")
     }
 }
