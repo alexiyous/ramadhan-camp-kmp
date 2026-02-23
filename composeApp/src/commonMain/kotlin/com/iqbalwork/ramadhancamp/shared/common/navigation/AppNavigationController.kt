@@ -42,16 +42,11 @@ class AppNavigationController(
     // ─── In-tab navigation ───────────────────────────────────────────────────
 
     override fun navigateToInsideTab(dest: TabDestination, withReplace: Boolean) {
-        Napier.log(
-            message = "navigateToInsideTab: dest=$dest, withReplace=$withReplace, currentTab=${currentTab.value}",
-            priority = LogLevel.DEBUG,
-        )
         val stack = tabBackStacks[currentTab.value].also { log { "there is a backstack" } } ?: return
         if (withReplace) {
             if (stack.isNotEmpty()) stack[stack.lastIndex] = dest
             else stack.add(dest)
         } else {
-            log { "adding to backstack" }
             stack.add(dest)
         }
     }
