@@ -3,7 +3,7 @@ package com.iqbalwork.ramadhancamp
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
-import androidx.compose.material3.MaterialTheme
+import com.iqbalwork.ramadhancamp.shared.common.ui.theme.RamadhanTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
@@ -24,7 +24,7 @@ import org.koin.compose.koinInject
 fun App(
     startScreen: StartScreen = StartScreen.Main,
 ) {
-    MaterialTheme {
+    RamadhanTheme {
         val resultRepository: ResultNavigationRepository = koinInject()
         val navController = rememberAppNavigationController(
             startDestination = startScreen.toRootDestination(),
