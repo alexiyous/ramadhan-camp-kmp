@@ -55,6 +55,9 @@ kotlin {
             api(libs.compose.uiTooling)
             api(libs.androidx.activity.compose)
             implementation(libs.koin.android)
+
+            // Ktor
+            implementation(libs.ktor.client.okhttp)
         }
         commonMain.dependencies {
             api(libs.compose.runtime)
@@ -79,6 +82,14 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
 
+            //Ktor
+            implementation(libs.ktor.client.auth)
+            implementation(libs.ktor.client.core)
+            implementation(libs.ktor.client.logging)
+            implementation(libs.ktor.client.content.negotiation)
+            implementation(libs.ktor.serialization.kotlinx.json)
+            implementation(libs.ktor.client.encoding)
+
             implementation(projects.shared)
             implementation(projects.core.data)
             implementation(projects.core.uikit)
@@ -89,6 +100,9 @@ kotlin {
         jvmMain.dependencies {
             api(compose.desktop.currentOs)
             api(libs.kotlinx.coroutinesSwing)
+        }
+        nativeMain.dependencies {
+            implementation(libs.ktor.client.darwin)
         }
     }
 }
