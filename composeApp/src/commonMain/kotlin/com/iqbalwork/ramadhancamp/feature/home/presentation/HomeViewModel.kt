@@ -3,21 +3,17 @@ package com.iqbalwork.ramadhancamp.feature.home.presentation
 import androidx.lifecycle.viewModelScope
 import com.iqbalwork.ramadhancamp.feature.home.domain.repository.HomeRepository
 import com.iqbalwork.ramadhancamp.feature.home.presentation.mapper.toErrorEmptyState
+import com.iqbalwork.ramadhancamp.feature.home.presentation.mapper.toUiModel
 import com.iqbalwork.ramadhancamp.feature.home.presentation.model.HomeEffect
 import com.iqbalwork.ramadhancamp.feature.home.presentation.model.HomeEvent
 import com.iqbalwork.ramadhancamp.feature.home.presentation.model.HomeState
 import com.iqbalwork.ramadhancamp.shared.common.navigation.AppNavigationController
 import com.iqbalwork.ramadhancamp.shared.common.ui.BaseViewModel
-import com.iqbalwork.ramadhancamp.shared.common.ui.components.error.ErrorEmptyState
-import com.iqbalwork.ramadhancamp.shared.common.ui.utils.TextResource
-import dev.jordond.compass.Coordinates
+import com.iqbalwork.ramadhancamp.shared.common.utils.toAppError
 import dev.jordond.compass.geolocation.GeolocatorResult
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
-import ramadhancamp.composeapp.generated.resources.Res
-import ramadhancamp.composeapp.generated.resources.error_location_message
-import ramadhancamp.composeapp.generated.resources.error_location_title
-import ramadhancamp.composeapp.generated.resources.image_danger_error
-import ramadhancamp.composeapp.generated.resources.retry
 
 class HomeViewModel(
     navController: AppNavigationController,
@@ -30,7 +26,9 @@ class HomeViewModel(
 
     init {
         viewModelScope.launch {
-
+            initData()
+            launch { observeNextPrayer() }
+            launch { observeLastSurahRead() }
         }
     }
 
@@ -50,6 +48,7 @@ class HomeViewModel(
                                     ),
                                 )
                             }
+                            getShalatSchedule(province, city)
                         },
                         onFailure = { handleGeoError(geoResult) }
                     )
@@ -74,8 +73,49 @@ class HomeViewModel(
         }
     }
 
+    private suspend fun observeNextPrayer() {
+        homeRepository.nextPrayer
+            .distinctUntilChanged()
+            .collectLatest {
+                updateState {
+                    copy(
+                        screenData = screenData.copy(
+                            nextPrayerData = it.toUiModel()
+                        )
+                    )
+                }
+            }
+    }
+
+    private suspend fun observeLastSurahRead() {
+        homeRepository.lastSurahRead
+            .distinctUntilChanged()
+            .collectLatest {
+                updateState {
+                    copy(
+                        screenData = screenData.copy(
+                            lastSurahReadData = it?.toUiModel()
+                        )
+                    )
+                }
+            }
+    }
+
+    private suspend fun getShalatSchedule(province: String, city: String) {
+        updateState { copy(isLoading = false) }
+        homeRepository.getShalatSchedule(province, city).onFailure {
+            updateState {
+                copy(
+                    emptyErrorState = null,
+                    appError = it.toAppError()
+                )
+            }
+        }
+    }
 
     override fun handleEvent(event: HomeEvent) {
-        TODO("Not yet implemented")
+        when (event) {
+            HomeEvent.LoadInitialData -> viewModelScope.launch { initData() }
+        }
     }
 }

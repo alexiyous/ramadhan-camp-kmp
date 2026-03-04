@@ -31,7 +31,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.iqbalwork.ramadhancamp.feature.bookmark.bookmarkTabEntries
-import com.iqbalwork.ramadhancamp.feature.home.homeTabEntries
+import com.iqbalwork.ramadhancamp.feature.home.presentation.route.homeTabEntries
 import com.iqbalwork.ramadhancamp.feature.main.presentation.mapper.toAppTabInfo
 import com.iqbalwork.ramadhancamp.feature.pray.prayTabEntries
 import com.iqbalwork.ramadhancamp.feature.qibla.qiblaTabEntries

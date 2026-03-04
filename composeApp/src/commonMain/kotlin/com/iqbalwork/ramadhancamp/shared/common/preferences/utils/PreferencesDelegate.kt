@@ -1,9 +1,9 @@
 package com.iqbalwork.ramadhancamp.shared.common.preferences.utils
 
 import com.iqbalwork.ramadhancamp.shared.common.preferences.domain.ScopedPreferences
-import kotlin.collections.remove
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
+import kotlinx.coroutines.flow.Flow
 
 fun ScopedPreferences.string(key: String, default: String = "") =
     object : ReadWriteProperty<Any?, String> {
@@ -82,3 +82,44 @@ fun ScopedPreferences.nullableLong(key: String) =
             if (value == null) remove(key) else putLong(key, value)
         }
     }
+
+// Single FlowPref<T> — T carries nullability.
+// FlowPref<String>  → flow never emits null, set() requires non-null value.
+// FlowPref<String?> → flow emits null when key absent, set(null) removes the key.
+class FlowPref<T>(
+    val flow: Flow<T>,
+    private val write: (T) -> Unit,
+) {
+    fun set(value: T) = write(value)
+}
+
+
+fun ScopedPreferences.stringFlowPref(key: String, default: String = ""): FlowPref<String> =
+    FlowPref(flow = getStringFlow(key, default)) { putString(key, it) }
+
+fun ScopedPreferences.nullableStringFlowPref(key: String): FlowPref<String?> =
+    FlowPref(flow = getStringOrNullFlow(key)) { if (it == null) remove(key) else putString(key, it) }
+
+fun ScopedPreferences.intFlowPref(key: String, default: Int = 0): FlowPref<Int> =
+    FlowPref(flow = getIntFlow(key, default)) { putInt(key, it) }
+
+fun ScopedPreferences.nullableIntFlowPref(key: String): FlowPref<Int?> =
+    FlowPref(flow = getIntOrNullFlow(key)) { if (it == null) remove(key) else putInt(key, it) }
+
+fun ScopedPreferences.doubleFlowPref(key: String, default: Double = 0.0): FlowPref<Double> =
+    FlowPref(flow = getDoubleFlow(key, default)) { putDouble(key, it) }
+
+fun ScopedPreferences.nullableDoubleFlowPref(key: String): FlowPref<Double?> =
+    FlowPref(flow = getDoubleOrNullFlow(key)) { if (it == null) remove(key) else putDouble(key, it) }
+
+fun ScopedPreferences.booleanFlowPref(key: String, default: Boolean = false): FlowPref<Boolean> =
+    FlowPref(flow = getBooleanFlow(key, default)) { putBoolean(key, it) }
+
+fun ScopedPreferences.nullableBooleanFlowPref(key: String): FlowPref<Boolean?> =
+    FlowPref(flow = getBooleanOrNullFlow(key)) { if (it == null) remove(key) else putBoolean(key, it) }
+
+fun ScopedPreferences.longFlowPref(key: String, default: Long = 0L): FlowPref<Long> =
+    FlowPref(flow = getLongFlow(key, default)) { putLong(key, it) }
+
+fun ScopedPreferences.nullableLongFlowPref(key: String): FlowPref<Long?> =
+    FlowPref(flow = getLongOrNullFlow(key)) { if (it == null) remove(key) else putLong(key, it) }
