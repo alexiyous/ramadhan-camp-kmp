@@ -15,4 +15,6 @@
     <string name="error_location_permission_denied_title">Aplikasi tidak memiliki akses lokasi pada perangkat</string>
     <string name="error_location_permission_denied_message">Buka pengaturan dan berikan akses lokasi pada aplikasi</string>
 
+    <string name="home_main_header_greeting">Assalamualaikum!</string>
+
 </resources>

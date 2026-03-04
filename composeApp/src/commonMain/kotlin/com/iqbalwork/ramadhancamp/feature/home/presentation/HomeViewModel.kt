@@ -9,8 +9,10 @@ import com.iqbalwork.ramadhancamp.feature.home.presentation.model.HomeEvent
 import com.iqbalwork.ramadhancamp.feature.home.presentation.model.HomeState
 import com.iqbalwork.ramadhancamp.shared.common.navigation.AppNavigationController
 import com.iqbalwork.ramadhancamp.shared.common.ui.BaseViewModel
+import com.iqbalwork.ramadhancamp.shared.common.utils.goToDeviceSettings
 import com.iqbalwork.ramadhancamp.shared.common.utils.toAppError
 import dev.jordond.compass.geolocation.GeolocatorResult
+import dev.jordond.compass.permissions.LocationPermissionController
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
@@ -39,12 +41,13 @@ class HomeViewModel(
             when(geoResult) {
                 is GeolocatorResult.Success -> {
                     homeRepository.getCurrentCityAndProvince(geoResult.data.coordinates).fold(
-                        onSuccess = { (city, province) ->
+                        onSuccess = { (city, province, country) ->
                             updateState {
                                 copy(
                                     screenData = screenData.copy(
                                         city = city,
-                                        province = province
+                                        province = province,
+                                        country = country
                                     ),
                                 )
                             }
@@ -68,7 +71,8 @@ class HomeViewModel(
             copy(
                 isLoading = false,
                 emptyErrorState = result.toErrorEmptyState(),
-                appError = null
+                appError = null,
+                isPermissionDenied = result is GeolocatorResult.PermissionDenied
             )
         }
     }
@@ -116,6 +120,7 @@ class HomeViewModel(
     override fun handleEvent(event: HomeEvent) {
         when (event) {
             HomeEvent.LoadInitialData -> viewModelScope.launch { initData() }
+            HomeEvent.GoToSetting -> goToDeviceSettings()
         }
     }
 }

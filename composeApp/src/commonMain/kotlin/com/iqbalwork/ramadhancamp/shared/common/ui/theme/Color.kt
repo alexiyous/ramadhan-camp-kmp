@@ -19,7 +19,7 @@ internal val accentTeal = Color(0xFF26A69A)
 internal val accentGold = Color(0xFFD4AF37)
 
 // Text
-internal val textPrimary = Color(0xFFFFFFFF)
+internal val textPrimary = Color(0xFFF1F5F9)
 internal val textSecondary = Color(0xCCFFFFFF)   // white 80%
 internal val textTertiary = Color(0x66FFFFFF)    // white 40%
 internal val textMuted = Color(0xFF94A3B8)

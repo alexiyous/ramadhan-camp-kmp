@@ -17,6 +17,7 @@ class HomePreferences(prefs: AppPreferences) {
     var lastLongitude: Double by scoped.double("lon")
     var lastCity: String? by scoped.nullableString("lastCity")
     var lastProvince: String? by scoped.nullableString("lastProvince")
+    var lastCountry: String? by scoped.nullableString("lastCountry")
 
     // Last surah read — nullable because user may not have read any surah yet
     val surahName: FlowPref<String?> = scoped.nullableStringFlowPref("surahName")

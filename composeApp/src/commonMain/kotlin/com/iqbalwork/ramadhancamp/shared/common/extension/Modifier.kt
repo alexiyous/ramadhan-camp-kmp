@@ -33,6 +33,12 @@ inline fun debounced(
     return onClickLambda
 }
 
+@Composable
+fun Modifier.modifyIf(condition: Boolean, block: @Composable Modifier.() -> Modifier): Modifier = if (condition) {
+    block(this)
+} else {
+    this
+}
 
 @Composable
 fun Modifier.debouncedClickable(

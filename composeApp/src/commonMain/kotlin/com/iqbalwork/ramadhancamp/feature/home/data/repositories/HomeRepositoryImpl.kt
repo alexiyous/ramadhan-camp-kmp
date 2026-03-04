@@ -9,6 +9,7 @@ import com.iqbalwork.ramadhancamp.feature.home.domain.model.NextPrayer
 import com.iqbalwork.ramadhancamp.feature.home.domain.repository.HomeRepository
 import com.iqbalwork.ramadhancamp.shared.common.utils.math.haversineDistanceKm
 import dev.jordond.compass.Coordinates
+import dev.jordond.compass.Place
 import dev.jordond.compass.geocoder.Geocoder
 import dev.jordond.compass.geolocation.Geolocator
 import dev.jordond.compass.geolocation.GeolocatorResult
@@ -53,14 +54,14 @@ class HomeRepositoryImpl(
             geolocator.current()
         }
 
-    override suspend fun getCurrentCityAndProvince(coordinates: Coordinates): Result<Pair<String, String>> = runCatching {
+    override suspend fun getCurrentCityAndProvince(coordinates: Coordinates): Result<Triple<String, String, String>> = runCatching {
         val lastLat = pref.lastLatitude
         val lastLng = pref.lastLongitude
         val distance = haversineDistanceKm(lastLat, lastLng, coordinates.latitude, coordinates.longitude)
 
         // If within 50km and we have a cached city, reuse it
        val result =
-           if (distance < MIN_DISTANCE_KM_FOR_CACHE && !pref.lastCity.isNullOrBlank())  pref.lastCity!! to pref.lastProvince!!
+           if (distance < MIN_DISTANCE_KM_FOR_CACHE && !pref.lastCity.isNullOrBlank()) Triple(pref.lastCity!!, pref.lastProvince!!, pref.lastCountry!!)
         else {
                val place = geocoder
                    .reverse(coordinates.latitude, coordinates.longitude)
@@ -68,15 +69,16 @@ class HomeRepositoryImpl(
 
                val province = place.administrativeArea ?: error("Province not found")
                val city  = place.subAdministrativeArea ?: error("City not found")
+               val country = place.country ?: error("Country not found")
 
                pref.lastLatitude  = coordinates.latitude
                pref.lastLongitude = coordinates.longitude
                pref.lastCity      = city
                pref.lastProvince  = province
+               pref.lastCountry   = country
 
-               city to province
+                Triple(city, province, country)
            }
-
         result
     }
 

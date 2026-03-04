@@ -11,7 +11,7 @@ interface HomeRepository {
     val lastSurahRead: Flow<LastSurahRead?>
     val nextPrayer: SharedFlow<NextPrayer>
     suspend fun getCurrentLocation() : Result<GeolocatorResult>
-    suspend fun getCurrentCityAndProvince(coordinates: Coordinates): Result<Pair<String, String>>
+    suspend fun getCurrentCityAndProvince(coordinates: Coordinates): Result<Triple<String, String, String>>
     suspend fun getShalatSchedule(province: String, city: String): Result<Unit>
     suspend fun observerNextPrayer()
     suspend fun saveLastReadSurah(surah: LastSurahRead)

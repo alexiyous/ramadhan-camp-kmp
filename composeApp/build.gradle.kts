@@ -65,6 +65,7 @@ kotlin {
             // geo
             implementation(libs.compass.geocoder.mobile)
             implementation(libs.compass.geolocation.mobile)
+            implementation(libs.permissions.mobile)
         }
         commonMain.dependencies {
             api(libs.compose.runtime)
@@ -125,6 +126,8 @@ kotlin {
         nativeMain.dependencies {
             implementation(libs.compass.geocoder.mobile)
             implementation(libs.compass.geolocation.mobile)
+            implementation(libs.permissions.mobile)
+
             implementation(libs.ktor.client.darwin)
         }
         wasmJsMain.dependencies {

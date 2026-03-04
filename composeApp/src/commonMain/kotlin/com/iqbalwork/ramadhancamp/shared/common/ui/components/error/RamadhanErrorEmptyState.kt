@@ -2,6 +2,8 @@ package com.iqbalwork.ramadhancamp.shared.common.ui.components.error
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import com.iqbalwork.ramadhancamp.shared.common.ui.theme.RamadhanTheme
 import com.iqbalwork.ramadhancamp.shared.common.ui.utils.TextResource
 import com.iqbalwork.ramadhancamp.shared.common.ui.utils.asString
 import com.iqbalwork.ramadhancamp.shared.common.utils.AppError
@@ -71,6 +73,20 @@ fun AppError.toErrorEmptyState(
             title = TextResource.StringResource(Res.string.error_critical_title),
             message = TextResource.StringResource(Res.string.error_critical_message),
             buttonText = TextResource.StringResource(Res.string.retry)
+        )
+    }
+}
+
+@Preview
+@Composable
+fun RamadhanErrorEmptyStatePreview() {
+    RamadhanTheme {
+        RamadhanErrorEmptyState(
+            errorEmptyState = AppError.NetworkError(
+                message = "No Internet Connection",
+                cause = Exception()
+            ).toErrorEmptyState(),
+            onButtonClick = {}
         )
     }
 }
