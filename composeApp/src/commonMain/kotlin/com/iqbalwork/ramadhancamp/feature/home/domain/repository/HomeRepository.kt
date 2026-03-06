@@ -15,4 +15,7 @@ interface HomeRepository {
     suspend fun getShalatSchedule(province: String, city: String): Result<Unit>
     suspend fun observerNextPrayer()
     suspend fun saveLastReadSurah(surah: LastSurahRead)
+    suspend fun getProvinces(): Result<List<String>>
+    suspend fun getKabKota(provinsi: String): Result<List<String>>
+    suspend fun saveManualLocation(province: String, city: String)
 }

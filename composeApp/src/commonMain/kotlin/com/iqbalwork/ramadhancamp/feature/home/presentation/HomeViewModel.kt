@@ -2,46 +2,56 @@ package com.iqbalwork.ramadhancamp.feature.home.presentation
 
 import androidx.lifecycle.viewModelScope
 import com.iqbalwork.ramadhancamp.feature.home.domain.repository.HomeRepository
+import com.iqbalwork.ramadhancamp.feature.home.presentation.locationpicker.model.LocationResult
 import com.iqbalwork.ramadhancamp.feature.home.presentation.mapper.toErrorEmptyState
 import com.iqbalwork.ramadhancamp.feature.home.presentation.mapper.toUiModel
 import com.iqbalwork.ramadhancamp.feature.home.presentation.model.HomeEffect
 import com.iqbalwork.ramadhancamp.feature.home.presentation.model.HomeEvent
 import com.iqbalwork.ramadhancamp.feature.home.presentation.model.HomeState
 import com.iqbalwork.ramadhancamp.shared.common.navigation.AppNavigationController
+import com.iqbalwork.ramadhancamp.shared.common.navigation.NavigationResultData
+import com.iqbalwork.ramadhancamp.shared.common.navigation.TabDestination
 import com.iqbalwork.ramadhancamp.shared.common.ui.BaseViewModel
 import com.iqbalwork.ramadhancamp.shared.common.utils.goToDeviceSettings
 import com.iqbalwork.ramadhancamp.shared.common.utils.toAppError
 import dev.jordond.compass.geolocation.GeolocatorResult
-import dev.jordond.compass.permissions.LocationPermissionController
+import io.github.aakira.napier.log
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
 class HomeViewModel(
     navController: AppNavigationController,
-    private val homeRepository: HomeRepository
+    private val homeRepository: HomeRepository,
 ) : BaseViewModel<Unit, HomeState, HomeEvent, HomeEffect>(
     params = Unit,
     initialState = HomeState(),
     navigationManager = navController,
+    resultKeys = arrayOf(LOCATION_PICKER_RESULT_KEY),
 ) {
+    companion object {
+        const val LOCATION_PICKER_RESULT_KEY = "home_location_picker"
+    }
 
     init {
         viewModelScope.launch {
             initData()
-            launch { observeNextPrayer() }
+            launch { homeRepository.observerNextPrayer() }
+            launch { subscribeNextPrayer() }
             launch { observeLastSurahRead() }
         }
     }
 
     private suspend fun initData() {
-        updateState { copy(isLoading = true) }
+        updateState { copy(isLoading = true, appError = null, emptyErrorState = null) }
         val result = homeRepository.getCurrentLocation().getOrNull()
         result?.let { geoResult ->
             when(geoResult) {
                 is GeolocatorResult.Success -> {
                     homeRepository.getCurrentCityAndProvince(geoResult.data.coordinates).fold(
                         onSuccess = { (city, province, country) ->
+                            log { "Got city and province from coordinates: ${geoResult.data.coordinates}, city: $city, province: $province, country: $country" }
+
                             updateState {
                                 copy(
                                     screenData = screenData.copy(
@@ -53,7 +63,8 @@ class HomeViewModel(
                             }
                             getShalatSchedule(province, city)
                         },
-                        onFailure = { handleGeoError(geoResult) }
+                        onFailure = {
+                            handleGeoError(geoResult) }
                     )
                 }
                 is GeolocatorResult.Error -> when(geoResult) {
@@ -77,7 +88,7 @@ class HomeViewModel(
         }
     }
 
-    private suspend fun observeNextPrayer() {
+    private suspend fun subscribeNextPrayer() {
         homeRepository.nextPrayer
             .distinctUntilChanged()
             .collectLatest {
@@ -106,13 +117,32 @@ class HomeViewModel(
     }
 
     private suspend fun getShalatSchedule(province: String, city: String) {
-        updateState { copy(isLoading = false) }
-        homeRepository.getShalatSchedule(province, city).onFailure {
-            updateState {
-                copy(
-                    emptyErrorState = null,
-                    appError = it.toAppError()
-                )
+        homeRepository.getShalatSchedule(province, city)
+            .onFailure {
+                // City/province not recognised by the API — let the user pick manually
+                navigationManager.navigateToInsideTab(TabDestination.HomeLocationPicker)
+            }
+            .onSuccess {
+                updateState {
+                    copy(isLoading = false, appError = null, emptyErrorState = null)
+                }
+            }
+    }
+
+    override fun navigationResultSuccess(key: String, data: NavigationResultData?) {
+        if (key == LOCATION_PICKER_RESULT_KEY) {
+            val result = data as? LocationResult ?: return
+            viewModelScope.launch {
+                homeRepository.saveManualLocation(result.province, result.city)
+                updateState {
+                    copy(
+                        screenData = screenData.copy(
+                            city = result.city,
+                            province = result.province,
+                        )
+                    )
+                }
+                getShalatSchedule(result.province, result.city)
             }
         }
     }

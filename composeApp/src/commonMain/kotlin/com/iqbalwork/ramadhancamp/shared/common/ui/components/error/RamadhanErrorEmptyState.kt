@@ -62,11 +62,7 @@ fun AppError.toErrorEmptyState(
             },
             title = TextResource.PlainText(this.httpCode.toString()),
             message = TextResource.PlainText(this.message),
-            buttonText = if (this.isServerError) {
-                TextResource.StringResource(Res.string.retry)
-            } else {
-                null
-            }
+            buttonText = TextResource.StringResource(Res.string.retry)
         )
         is AppError.UnexpectedError -> ErrorEmptyState(
             icon = Res.drawable.image_danger_error,

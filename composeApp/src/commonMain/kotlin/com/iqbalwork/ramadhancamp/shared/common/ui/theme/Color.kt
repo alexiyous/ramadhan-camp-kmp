@@ -26,8 +26,8 @@ internal val textTertiary = Color(0x66FFFFFF)    // white 40%
 internal val textMuted = Color(0xFF94A3B8)
 internal val textOnLight = Color(0xFF1A2E28)
 
-// Borders / Dividers
-internal val divider = Color(0x1AFFFFFF)         // white 10%
+// Borders / Dividers#10221DF2
+internal val divider = Color(0xFF064C39)
 internal val borderLight = Color(0xFFCBD5E1)
 
 // Status

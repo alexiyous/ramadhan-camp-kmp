@@ -10,9 +10,11 @@ import com.iqbalwork.ramadhancamp.feature.home.domain.repository.HomeRepository
 import com.iqbalwork.ramadhancamp.shared.common.utils.math.haversineDistanceKm
 import dev.jordond.compass.Coordinates
 import dev.jordond.compass.Place
+import dev.jordond.compass.Priority
 import dev.jordond.compass.geocoder.Geocoder
 import dev.jordond.compass.geolocation.Geolocator
 import dev.jordond.compass.geolocation.GeolocatorResult
+import io.github.aakira.napier.log
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -51,7 +53,7 @@ class HomeRepositoryImpl(
 
     override suspend fun getCurrentLocation(): Result<GeolocatorResult> =
         runCatching {
-            geolocator.current()
+            geolocator.current(Priority.HighAccuracy)
         }
 
     override suspend fun getCurrentCityAndProvince(coordinates: Coordinates): Result<Triple<String, String, String>> = runCatching {
@@ -77,7 +79,7 @@ class HomeRepositoryImpl(
                pref.lastProvince  = province
                pref.lastCountry   = country
 
-                Triple(city, province, country)
+                Triple("Kota $city", province, country)
            }
         result
     }
@@ -87,6 +89,7 @@ class HomeRepositoryImpl(
         city: String
     ): Result<Unit> = runCatching {
         currentShalatSchedule = homeRemoteDatasource.getShalatSchedule(province, city).getOrThrow()
+        log { "SHALAT SCHEDULE $currentShalatSchedule" }
     }
 
     override suspend fun observerNextPrayer() {
@@ -94,9 +97,15 @@ class HomeRepositoryImpl(
             val now = Clock.System.now()
             val nowLocal = now.toLocalDateTime(TimeZone.currentSystemDefault())
 
+            log { "SCHEDULE ${ currentShalatSchedule?.data?.jadwal
+                ?.find { it.tanggal == nowLocal.day }}" }
+
             currentShalatSchedule?.data?.jadwal
                 ?.find { it.tanggal == nowLocal.day }
-                ?.let { today -> _nextPrayer.tryEmit(today.nextPrayer(nowLocal)) }
+                ?.let { today ->
+                    _nextPrayer.tryEmit(today.nextPrayer(nowLocal))
+                    log { "SHALAT  $today" }
+                }
 
             val secondsUntilNextMinute = 60 - nowLocal.second
             delay(secondsUntilNextMinute * 1000L)
@@ -107,5 +116,19 @@ class HomeRepositoryImpl(
         pref.surahName.set(surah.surahName)
         pref.lastAyatNumber.set(surah.ayatNumber)
         pref.lastDateRead.set(surah.readDate)
+    }
+
+    override suspend fun getProvinces(): Result<List<String>> =
+        homeRemoteDatasource.getProvinces().map { it.data }
+
+    override suspend fun getKabKota(provinsi: String): Result<List<String>> =
+        homeRemoteDatasource.getKabKota(provinsi).map { it.data }
+
+    override suspend fun saveManualLocation(province: String, city: String) {
+        pref.lastCity = city
+        pref.lastProvince = province
+        // Clear coordinates so the 50 km cache doesn't suppress the next geocode attempt
+        pref.lastLatitude = 0.0
+        pref.lastLongitude = 0.0
     }
 }

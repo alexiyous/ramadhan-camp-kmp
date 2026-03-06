@@ -17,9 +17,10 @@ sealed interface RootDestination : NavKey {
 @Serializable
 sealed interface TabDestination : NavKey {
     // Home
-    @Serializable data object HomeMain       : TabDestination
-    @Serializable data object HomeDetail     : TabDestination
-    @Serializable data object HomeSubDetail  : TabDestination
+    @Serializable data object HomeMain           : TabDestination
+    @Serializable data object HomeDetail         : TabDestination
+    @Serializable data object HomeSubDetail      : TabDestination
+    @Serializable data object HomeLocationPicker : TabDestination
     // Pray
     @Serializable data object PrayMain       : TabDestination
     @Serializable data object PrayDetail     : TabDestination
@@ -52,9 +53,10 @@ val appSavedStateConfig = SavedStateConfiguration {
         polymorphic(NavKey::class) {
             subclass(RootDestination.Main::class,          RootDestination.Main.serializer())
             subclass(RootDestination.Auth::class,          RootDestination.Auth.serializer())
-            subclass(TabDestination.HomeMain::class,          TabDestination.HomeMain.serializer())
-            subclass(TabDestination.HomeDetail::class,        TabDestination.HomeDetail.serializer())
-            subclass(TabDestination.HomeSubDetail::class,     TabDestination.HomeSubDetail.serializer())
+            subclass(TabDestination.HomeMain::class,             TabDestination.HomeMain.serializer())
+            subclass(TabDestination.HomeDetail::class,           TabDestination.HomeDetail.serializer())
+            subclass(TabDestination.HomeSubDetail::class,        TabDestination.HomeSubDetail.serializer())
+            subclass(TabDestination.HomeLocationPicker::class,   TabDestination.HomeLocationPicker.serializer())
             subclass(TabDestination.PrayMain::class,          TabDestination.PrayMain.serializer())
             subclass(TabDestination.PrayDetail::class,        TabDestination.PrayDetail.serializer())
             subclass(TabDestination.PraySubDetail::class,     TabDestination.PraySubDetail.serializer())

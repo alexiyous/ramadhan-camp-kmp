@@ -4,7 +4,7 @@
     <string name="error_critical_title">Ada sesuatu yang rusak</string>
     <string name="error_critical_message">Tunggu sebentar dan coba lagi</string>
     <string name="error_critical_snack_bar">Ada sesuatu yang rusak. Tunggu sebentar dan coba lagi</string>
-    <string name="error_network_title">Ada yang tidak beresк</string>
+    <string name="error_network_title">Ada yang tidak beres</string>
     <string name="error_network_message">Periksa internet atau coba lagi</string>
     <string name="error_network_snack_bar">Ada yang tidak beres. Periksa internet atau coba lagi</string>
 
@@ -12,8 +12,8 @@
     <string name="error_location_message">Periksa izin lokasi atau coba lagi</string>
     <string name="error_location_not_supported_message">Perangkat tidak mendukung geolokasi</string>
     <string name="error_location_not_found_message">Tidak ada lokasi yang ditemukan berdasarkan koordinat pengguna</string>
-    <string name="error_location_permission_denied_title">Aplikasi tidak memiliki akses lokasi pada perangkat</string>
-    <string name="error_location_permission_denied_message">Buka pengaturan dan berikan akses lokasi pada aplikasi</string>
+    <string name="error_location_permission_denied_title">Lokasi Tepat Diperlukan</string>
+    <string name="error_location_permission_denied_message">Jadwal shalat berbeda tiap kota. Izinkan lokasi tepat agar jadwal akurat.</string>
 
     <string name="home_main_header_greeting">Assalamualaikum!</string>
 

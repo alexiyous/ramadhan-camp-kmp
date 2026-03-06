@@ -6,11 +6,15 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -51,46 +55,53 @@ fun MainScreen() {
 
     Scaffold(
         bottomBar = {
-            NavigationBar(
-                containerColor = RamadhanTheme.colors.bgSecondary,
-                contentColor = RamadhanTheme.colors.textMuted,
-            ) {
-                AppTab.entries.forEach { tab ->
-                    val appTabInfo = tab.toAppTabInfo(currentTab == tab)
-                    val scale by animateFloatAsState(
-                        targetValue = if (appTabInfo.selected) 1.2f else 1.0f,
-                        animationSpec = spring(dampingRatio = 0.5f, stiffness = 300f),
-                    )
-                    NavigationBarItem(
-                        selected = appTabInfo.selected,
-                        onClick = { navController.switchTab(tab) },
-                        icon = {
-                            Icon(
-                                painter = painterResource(appTabInfo.icon),
-                                contentDescription = appTabInfo.title,
-                                modifier = Modifier.size(24.dp).scale(scale),
-                            )
-                        },
-                        label = {
-                            Text(
-                                text = appTabInfo.title,
-                                style = RamadhanTheme.typography.labelSmall,
-                            )
-                        },
-                        alwaysShowLabel = true,
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = RamadhanTheme.colors.accentPrimary,
-                            unselectedIconColor = RamadhanTheme.colors.textMuted,
-                            selectedTextColor = RamadhanTheme.colors.accentPrimary,
-                            unselectedTextColor = RamadhanTheme.colors.textMuted,
-                            indicatorColor = Color.Transparent,
-                        ),
-                    )
+            Column {
+                HorizontalDivider(
+                    thickness = 0.5.dp,
+                    color = RamadhanTheme.colors.divider,
+                )
+                NavigationBar(
+                    tonalElevation = 20.dp,
+                    containerColor = RamadhanTheme.colors.bgPrimary,
+                    contentColor = RamadhanTheme.colors.textMuted,
+                ) {
+                    AppTab.entries.forEach { tab ->
+                        val appTabInfo = tab.toAppTabInfo(currentTab == tab)
+                        val scale by animateFloatAsState(
+                            targetValue = if (appTabInfo.selected) 1.2f else 1.0f,
+                            animationSpec = spring(dampingRatio = 0.5f, stiffness = 300f),
+                        )
+                        NavigationBarItem(
+                            selected = appTabInfo.selected,
+                            onClick = { navController.switchTab(tab) },
+                            icon = {
+                                Icon(
+                                    painter = painterResource(appTabInfo.icon),
+                                    contentDescription = appTabInfo.title,
+                                    modifier = Modifier.size(24.dp).scale(scale),
+                                )
+                            },
+                            label = {
+                                Text(
+                                    text = appTabInfo.title,
+                                    style = RamadhanTheme.typography.labelSmall,
+                                )
+                            },
+                            alwaysShowLabel = true,
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = RamadhanTheme.colors.accentPrimary,
+                                unselectedIconColor = RamadhanTheme.colors.textMuted,
+                                selectedTextColor = RamadhanTheme.colors.accentPrimary,
+                                unselectedTextColor = RamadhanTheme.colors.textMuted,
+                                indicatorColor = Color.Transparent,
+                            ),
+                        )
+                    }
                 }
             }
         },
     ) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+        Box(modifier = Modifier.fillMaxSize().windowInsetsPadding(WindowInsets(bottom = innerPadding.calculateBottomPadding()))) {
             AppTab.entries.forEach { tab ->
                 key(tab) {
                     val isActive = currentTab == tab

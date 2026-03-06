@@ -101,7 +101,7 @@ fun CardNextPrayer(
                         color = RamadhanTheme.colors.textPrimary
                     )
                     Text(
-                        text = remainingMinute,
+                        text = "$remainingMinute Menit",
                         style = RamadhanTheme.typography.headlineMedium,
                         color = RamadhanTheme.colors.textPrimary
                     )
