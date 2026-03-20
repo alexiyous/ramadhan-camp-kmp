@@ -87,7 +87,7 @@ class HomeRepositoryImpl(
                pref.lastProvince  = province
                pref.lastCountry   = country
 
-                Triple("Kota $city", province, country)
+                Triple(city, province, country)
            }
         result
     }

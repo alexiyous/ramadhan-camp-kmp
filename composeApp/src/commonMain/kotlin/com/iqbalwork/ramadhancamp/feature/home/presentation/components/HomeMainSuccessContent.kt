@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -20,7 +22,8 @@ fun HomeMainSuccessContent(
     modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = modifier,
+        modifier = modifier
+            .verticalScroll(rememberScrollState()),
     ) {
         HomeMainHeader(
             modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
@@ -33,7 +36,7 @@ fun HomeMainSuccessContent(
             modifier = Modifier.fillMaxWidth(),
             prayerName = homeMainData.nextPrayerData.nextPrayerName,
             prayerTime = homeMainData.nextPrayerData.nextPrayerTime,
-            date = " Selasa, 24 Sya'ban 1445 H",
+            date = homeMainData.currentDate,
             remainingMinute = homeMainData.nextPrayerData.remainingMinutesToNextPrayer.toString()
         )
     }

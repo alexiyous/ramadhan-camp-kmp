@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -48,7 +49,12 @@ import com.iqbalwork.ramadhancamp.shared.common.ui.theme.TypographyScheme
 fun LocationPickerScreen() {
     val viewModel: LocationPickerViewModel = rememberViewModel()
     val state by viewModel.state.collectAsStateWithLifecycle()
-    LocationPickerContent(state = state, action = viewModel.rememberDispatch())
+    val action = viewModel.rememberDispatch()
+    LocationPickerContent(
+        modifier = Modifier.fillMaxSize(),
+        state = state,
+        action = action
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -63,6 +69,7 @@ fun LocationPickerContent(
 
     Scaffold(
         modifier = modifier,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
                 title = {
@@ -93,7 +100,6 @@ fun LocationPickerContent(
                 .fillMaxSize()
                 .padding(innerPadding),
         ) {
-            // ── Province section ─────────────────────────────────────────────
             LocationSectionHeader(title = "PILIH PROVINSI", colors = colors, typography = typography)
             if (state.isLoadingProvinces) {
                 Box(

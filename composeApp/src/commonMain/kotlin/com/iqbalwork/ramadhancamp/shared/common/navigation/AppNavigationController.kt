@@ -4,15 +4,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
-import io.github.aakira.napier.LogLevel
-import io.github.aakira.napier.Napier
-import io.github.aakira.napier.log
 import kotlinx.coroutines.flow.SharedFlow
+import org.koin.compose.koinInject
 
 
 /**
@@ -21,22 +18,28 @@ import kotlinx.coroutines.flow.SharedFlow
  *  - Tab back stacks  : [TabDestination] + [DialogDestination] — screens and dialogs inside each
  *                       bottom-tab navigator. Dialogs are pushed/popped directly on the tab stack;
  *                       [BottomSheetSceneStrategy] detects them by entry metadata.
+ *
+ * Lives as a Koin singleton. Back-stack references are vars updated by
+ * [getAppNavigationController] on every recomposition so ViewModels always
+ * push to the live stacks — even after a configuration change.
  */
 class AppNavigationController(
-    val rootBackStack: NavBackStack<NavKey>,
-    val tabBackStacks: Map<AppTab, NavBackStack<NavKey>>,
-    val currentTab: MutableState<AppTab>,
     private val resultRepository: ResultNavigationRepository,
 ) : AppNavigationAction, ResultNavigationAction {
+
+    var rootBackStack: NavBackStack<NavKey>? = null
+    var tabBackStacks: Map<AppTab, NavBackStack<NavKey>> = emptyMap()
+    var currentTab: MutableState<AppTab> = mutableStateOf(AppTab.Home)
 
     // ─── Root navigation ─────────────────────────────────────────────────────
 
     override fun navigateTo(dest: RootDestination, withReplace: Boolean) {
+        val stack = rootBackStack ?: return
         if (withReplace) {
-            if (rootBackStack.isNotEmpty()) rootBackStack[rootBackStack.lastIndex] = dest
-            else rootBackStack.add(dest)
+            if (stack.isNotEmpty()) stack[stack.lastIndex] = dest
+            else stack.add(dest)
         } else {
-            rootBackStack.add(dest)
+            stack.add(dest)
         }
     }
 
@@ -56,23 +59,25 @@ class AppNavigationController(
 
     override fun back(navigationResult: NavigationResult?) {
         navigationResult?.let { sendResult(it) }
+        val root = rootBackStack ?: return
         val tabStack = tabBackStacks[currentTab.value]
         when {
             tabStack != null && tabStack.size > 1 -> tabStack.removeLastOrNull()
-            rootBackStack.size > 1 -> rootBackStack.removeLastOrNull()
+            root.size > 1 -> root.removeLastOrNull()
         }
     }
 
     override fun backToScreen(key: NavKey, navigationResult: NavigationResult?) {
         navigationResult?.let { sendResult(it) }
+        val root = rootBackStack ?: return
         val tabStack = tabBackStacks[currentTab.value]
         if (tabStack != null && tabStack.size > 1) {
             while (tabStack.size > 1 && tabStack.last() != key) {
                 tabStack.removeLastOrNull()
             }
         } else {
-            while (rootBackStack.size > 1 && rootBackStack.last() != key) {
-                rootBackStack.removeLastOrNull()
+            while (root.size > 1 && root.last() != key) {
+                root.removeLastOrNull()
             }
         }
     }
@@ -80,8 +85,9 @@ class AppNavigationController(
     // ─── Flow / tab navigation ───────────────────────────────────────────────
 
     override fun startNewFlow(dest: RootDestination) {
-        rootBackStack.clear()
-        rootBackStack.add(dest)
+        val stack = rootBackStack ?: return
+        stack.clear()
+        stack.add(dest)
     }
 
     override fun switchTab(tab: AppTab) {
@@ -139,38 +145,37 @@ interface ResultNavigationAction {
 
 // ─── Factory ─────────────────────────────────────────────────────────────────
 
+/**
+ * Injects the singleton [AppNavigationController] and wires the Compose-managed
+ * back stacks into it on every recomposition. Direct assignment (rather than
+ * SideEffect) is intentional: [NavDisplay] reads [AppNavigationController.rootBackStack]
+ * in the same composition pass, so the value must be set before that call.
+ */
 @Composable
-fun rememberAppNavigationController(
+fun getAppNavigationController(
     startDestination: RootDestination,
-    resultRepository: ResultNavigationRepository,
 ): AppNavigationController {
-    val rootBackStack = rememberNavBackStack(appSavedStateConfig, startDestination)
-    val currentTab = rememberSaveable { mutableStateOf(AppTab.Home) }
+    val controller: AppNavigationController = koinInject()
 
+    val rootBackStack     = rememberNavBackStack(appSavedStateConfig, startDestination)
+    val currentTab        = rememberSaveable { mutableStateOf(AppTab.Home) }
     val homeBackStack     = rememberNavBackStack(appSavedStateConfig, TabDestination.HomeMain     as NavKey)
     val prayBackStack     = rememberNavBackStack(appSavedStateConfig, TabDestination.PrayMain     as NavKey)
     val quranBackStack    = rememberNavBackStack(appSavedStateConfig, TabDestination.QuranMain    as NavKey)
     val qiblaBackStack    = rememberNavBackStack(appSavedStateConfig, TabDestination.QiblaMain    as NavKey)
     val bookmarkBackStack = rememberNavBackStack(appSavedStateConfig, TabDestination.BookmarkMain as NavKey)
 
-    val tabBackStacks = rememberSaveable {
-        mapOf(
-            AppTab.Home     to homeBackStack,
-            AppTab.Pray     to prayBackStack,
-            AppTab.Quran    to quranBackStack,
-            AppTab.Qibla    to qiblaBackStack,
-            AppTab.Bookmark to bookmarkBackStack,
-        )
-    }
+    controller.rootBackStack      = rootBackStack
+    controller.currentTab = currentTab
+    controller.tabBackStacks = mapOf(
+        AppTab.Home     to homeBackStack,
+        AppTab.Pray     to prayBackStack,
+        AppTab.Quran    to quranBackStack,
+        AppTab.Qibla    to qiblaBackStack,
+        AppTab.Bookmark to bookmarkBackStack,
+    )
 
-    return remember(rootBackStack) {
-        AppNavigationController(
-            rootBackStack = rootBackStack,
-            tabBackStacks = tabBackStacks,
-            currentTab = currentTab,
-            resultRepository = resultRepository,
-        )
-    }
+    return controller
 }
 
 val LocalAppNavController = compositionLocalOf<AppNavigationController> {

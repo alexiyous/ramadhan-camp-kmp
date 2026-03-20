@@ -15,24 +15,20 @@ import com.iqbalwork.ramadhancamp.core.presentation.mapper.toRootDestination
 import com.iqbalwork.ramadhancamp.feature.auth.presentation.AuthScreen
 import com.iqbalwork.ramadhancamp.feature.main.presentation.MainScreen
 import com.iqbalwork.ramadhancamp.shared.common.navigation.LocalAppNavController
-import com.iqbalwork.ramadhancamp.shared.common.navigation.ResultNavigationRepository
 import com.iqbalwork.ramadhancamp.shared.common.navigation.RootDestination
-import com.iqbalwork.ramadhancamp.shared.common.navigation.rememberAppNavigationController
-import org.koin.compose.koinInject
+import com.iqbalwork.ramadhancamp.shared.common.navigation.getAppNavigationController
 
 @Composable
 fun App(
     startScreen: StartScreen = StartScreen.Main,
 ) {
     RamadhanTheme {
-        val resultRepository: ResultNavigationRepository = koinInject()
-        val navController = rememberAppNavigationController(
+        val navController = getAppNavigationController(
             startDestination = startScreen.toRootDestination(),
-            resultRepository = resultRepository
         )
         CompositionLocalProvider(LocalAppNavController provides navController) {
             NavDisplay(
-                backStack = navController.rootBackStack,
+                backStack = navController.rootBackStack!!,
                 entryDecorators = listOf(
                     rememberSaveableStateHolderNavEntryDecorator(),
                     rememberViewModelStoreNavEntryDecorator(),

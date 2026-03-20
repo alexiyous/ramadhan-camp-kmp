@@ -12,6 +12,7 @@ import com.iqbalwork.ramadhancamp.shared.common.navigation.AppNavigationControll
 import com.iqbalwork.ramadhancamp.shared.common.navigation.NavigationResultData
 import com.iqbalwork.ramadhancamp.shared.common.navigation.TabDestination
 import com.iqbalwork.ramadhancamp.shared.common.ui.BaseViewModel
+import com.iqbalwork.ramadhancamp.shared.common.utils.date.getCurrentDateLocalized
 import com.iqbalwork.ramadhancamp.shared.common.utils.goToDeviceSettings
 import dev.jordond.compass.geolocation.GeolocatorResult
 import kotlinx.coroutines.flow.collectLatest
@@ -51,8 +52,8 @@ class HomeViewModel(
                                 copy(
                                     screenData = screenData.copy(
                                         city = city,
-                                        province = province,
-                                        country = country
+                                        country = country,
+                                        currentDate = getCurrentDateLocalized()
                                     ),
                                 )
                             }
@@ -130,7 +131,6 @@ class HomeViewModel(
                     copy(
                         screenData = screenData.copy(
                             city = result.city,
-                            province = result.province,
                         )
                     )
                 }

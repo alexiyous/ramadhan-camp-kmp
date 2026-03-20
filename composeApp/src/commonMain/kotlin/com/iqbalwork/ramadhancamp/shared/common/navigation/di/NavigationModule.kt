@@ -1,5 +1,6 @@
 package com.iqbalwork.ramadhancamp.shared.common.navigation.di
 
+import com.iqbalwork.ramadhancamp.shared.common.navigation.AppNavigationController
 import com.iqbalwork.ramadhancamp.shared.common.navigation.ResultNavigationRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -18,4 +19,6 @@ val navigationModule =
                 coroutineScope = get<CoroutineScope>(named(NAVIGATION_RESULT_SCOPE)),
             )
         }
+
+        single { AppNavigationController(resultRepository = get()) }
     }
