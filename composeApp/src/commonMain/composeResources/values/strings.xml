@@ -19,5 +19,10 @@
 
     <string name="next">Berikutnya</string>
     <string name="remaining_time">SISA WAKTU</string>
+    <string name="back">Kembali</string>
+    <string name="pick_province">PILIH PROVINSI</string>
+    <string name="pick_city">PILIH KAB/KOTA</string>
+    <string name="confirm_location">Konfirmasi Lokasi</string>
+    <string name="pick_location">Pilih Lokasi</string>
 
 </resources>

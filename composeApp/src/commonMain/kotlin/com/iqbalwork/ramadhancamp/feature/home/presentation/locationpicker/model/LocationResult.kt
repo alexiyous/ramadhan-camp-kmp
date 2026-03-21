@@ -3,6 +3,7 @@ package com.iqbalwork.ramadhancamp.feature.home.presentation.locationpicker.mode
 import com.iqbalwork.ramadhancamp.shared.common.navigation.NavigationResultData
 
 data class LocationResult(
+    val country: String,
     val province: String,
     val city: String,
 ) : NavigationResultData

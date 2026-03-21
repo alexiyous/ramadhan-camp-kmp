@@ -2,16 +2,18 @@ package com.iqbalwork.ramadhancamp.feature.home.presentation.locationpicker
 
 import androidx.lifecycle.viewModelScope
 import com.iqbalwork.ramadhancamp.feature.home.domain.repository.HomeRepository
-import com.iqbalwork.ramadhancamp.feature.home.presentation.HomeViewModel
 import com.iqbalwork.ramadhancamp.feature.home.presentation.locationpicker.model.LocationPickerEffect
 import com.iqbalwork.ramadhancamp.feature.home.presentation.locationpicker.model.LocationPickerEvent
 import com.iqbalwork.ramadhancamp.feature.home.presentation.locationpicker.model.LocationPickerState
 import com.iqbalwork.ramadhancamp.feature.home.presentation.locationpicker.model.LocationResult
+import com.iqbalwork.ramadhancamp.feature.home.presentation.locationpicker.model.canConfirm
 import com.iqbalwork.ramadhancamp.shared.common.navigation.AppNavigationController
 import com.iqbalwork.ramadhancamp.shared.common.navigation.NavigationResult
 import com.iqbalwork.ramadhancamp.shared.common.ui.BaseViewModel
 import com.iqbalwork.ramadhancamp.shared.common.utils.toAppError
 import kotlinx.coroutines.launch
+
+const val LOCATION_PICKER_RESULT_KEY = "home_location_picker_result_key"
 
 class LocationPickerViewModel(
     navController: AppNavigationController,
@@ -26,31 +28,35 @@ class LocationPickerViewModel(
     }
 
     private suspend fun loadProvinces() {
-        updateState { copy(isLoadingProvinces = true, error = null) }
+        updateState { copy(isLoading = true, error = null) }
         homeRepository.getProvinces().fold(
             onSuccess = { provinces ->
-                updateState { copy(isLoadingProvinces = false, provinces = provinces) }
+                updateState { copy(isLoading = false, provinces = provinces) }
             },
             onFailure = { error ->
-                updateState { copy(isLoadingProvinces = false, error = error.toAppError()) }
+                updateState { copy(isLoading = false, error = error.toAppError()) }
             },
         )
     }
 
     private suspend fun loadKabKota(provinsi: String) {
-        updateState { copy(isLoadingCities = true, cities = emptyList(), selectedCity = null, error = null) }
+        updateState { copy(isLoading = true, cities = emptyList(), selectedCity = null, error = null) }
         homeRepository.getKabKota(provinsi).fold(
             onSuccess = { cities ->
-                updateState { copy(isLoadingCities = false, cities = cities) }
+                updateState { copy(isLoading = false, cities = cities) }
             },
             onFailure = { error ->
-                updateState { copy(isLoadingCities = false, error = error.toAppError()) }
+                updateState { copy(isLoading = false, error = error.toAppError()) }
             },
         )
     }
 
     override fun handleEvent(event: LocationPickerEvent) {
         when (event) {
+            is LocationPickerEvent.LoadProvinces -> {
+                viewModelScope.launch { loadProvinces() }
+            }
+
             is LocationPickerEvent.SelectProvince -> {
                 updateState { copy(selectedProvince = event.province, selectedCity = null, cities = emptyList()) }
                 viewModelScope.launch { loadKabKota(event.province) }
@@ -59,16 +65,17 @@ class LocationPickerViewModel(
                 updateState { copy(selectedCity = event.city) }
             }
             LocationPickerEvent.Confirm -> {
-                val province = state.value.selectedProvince ?: return
-                val city = state.value.selectedCity ?: return
+                if (!state.value.canConfirm) return
+                val city = state.value.selectedCity
+                val province = state.value.selectedProvince
                 navigationManager.back(
                     NavigationResult.Success(
-                        key = HomeViewModel.LOCATION_PICKER_RESULT_KEY,
-                        value = LocationResult(province = province, city = city),
+                        key = LOCATION_PICKER_RESULT_KEY,
+                        value = LocationResult(country = "Indonesia", province = province!!, city = city!!),
                     )
                 )
             }
-            LocationPickerEvent.Cancel -> navigationManager.back()
+            LocationPickerEvent.Cancel -> updateState { copy(selectedProvince = null, selectedCity = null) }
         }
     }
 }

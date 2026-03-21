@@ -172,12 +172,6 @@ private fun buttonColors(variant: RamadhanButtonProps.Variant): ButtonColors {
             disabledContentColor = RamadhanTheme.colors.textMuted,
             disabledContainerColor = RamadhanTheme.colors.bgContentSecondary,
         )
-        RamadhanButtonProps.Variant.MICROSOFTID -> ButtonColors(
-            containerColor = RamadhanTheme.colors.bgSecondary,
-            contentColor = RamadhanTheme.colors.textPrimary,
-            disabledContentColor = RamadhanTheme.colors.textMuted,
-            disabledContainerColor = RamadhanTheme.colors.bgContentSecondary,
-        )
     }
 }
 
@@ -188,7 +182,6 @@ private fun loaderColor(variant: RamadhanButtonProps.Variant): Color {
         RamadhanButtonProps.Variant.Secondary -> RamadhanTheme.colors.accentPrimary
         RamadhanButtonProps.Variant.Tertiary -> RamadhanTheme.colors.accentPrimary
         RamadhanButtonProps.Variant.Danger -> RamadhanTheme.colors.colorDanger
-        RamadhanButtonProps.Variant.MICROSOFTID -> RamadhanTheme.colors.textPrimary
     }
 }
 
@@ -203,7 +196,6 @@ object RamadhanButtonProps {
         Secondary,
         Tertiary,
         Danger,
-        MICROSOFTID
     }
 
     enum class Size(

@@ -2,6 +2,7 @@ package com.iqbalwork.ramadhancamp.feature.home.presentation
 
 import androidx.lifecycle.viewModelScope
 import com.iqbalwork.ramadhancamp.feature.home.domain.repository.HomeRepository
+import com.iqbalwork.ramadhancamp.feature.home.presentation.locationpicker.LOCATION_PICKER_RESULT_KEY
 import com.iqbalwork.ramadhancamp.feature.home.presentation.locationpicker.model.LocationResult
 import com.iqbalwork.ramadhancamp.feature.home.presentation.mapper.toErrorEmptyState
 import com.iqbalwork.ramadhancamp.feature.home.presentation.mapper.toUiModel
@@ -28,9 +29,6 @@ class HomeViewModel(
     navigationManager = navController,
     resultKeys = arrayOf(LOCATION_PICKER_RESULT_KEY),
 ) {
-    companion object {
-        const val LOCATION_PICKER_RESULT_KEY = "home_location_picker"
-    }
 
     init {
         viewModelScope.launch {
@@ -123,18 +121,21 @@ class HomeViewModel(
     }
 
     override fun navigationResultSuccess(key: String, data: NavigationResultData?) {
-        if (key == LOCATION_PICKER_RESULT_KEY) {
-            val result = data as? LocationResult ?: return
-            viewModelScope.launch {
-                homeRepository.saveManualLocation(result.province, result.city)
-                updateState {
-                    copy(
-                        screenData = screenData.copy(
-                            city = result.city,
+        when (key) {
+            LOCATION_PICKER_RESULT_KEY -> {
+                val result = data as? LocationResult ?: return
+                viewModelScope.launch {
+                    homeRepository.saveManualLocation(result.province, result.city)
+                    updateState {
+                        copy(
+                            screenData = screenData.copy(
+                                city = result.city,
+                                country = result.country,
+                            )
                         )
-                    )
+                    }
+                    getShalatSchedule(result.province, result.city)
                 }
-                getShalatSchedule(result.province, result.city)
             }
         }
     }
