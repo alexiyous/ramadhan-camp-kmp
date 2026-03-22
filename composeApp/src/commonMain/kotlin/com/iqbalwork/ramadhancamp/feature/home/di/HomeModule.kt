@@ -13,14 +13,8 @@ import org.koin.dsl.bind
 import org.koin.dsl.module
 
 val homeModule = module {
-    viewModel { params -> HomeViewModel(
-        params.get(),
-        homeRepository = get()
-    ) }
-    viewModel { params -> LocationPickerViewModel(
-        params.get(),
-        homeRepository = get()
-    ) }
+    viewModel { HomeViewModel(get(), homeRepository = get()) }
+    viewModel { LocationPickerViewModel(get(), homeRepository = get()) }
     singleOf(::HomePreferences)
     factoryOf(::HomeRemoteDatasource)
     factoryOf(::HomeRepositoryImpl) bind HomeRepository::class

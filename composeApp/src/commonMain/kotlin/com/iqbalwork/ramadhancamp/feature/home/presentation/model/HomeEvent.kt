@@ -5,4 +5,5 @@ import com.iqbalwork.ramadhancamp.shared.common.ui.UiEvent
 sealed interface HomeEvent: UiEvent {
     data object LoadInitialData: HomeEvent
     data object GoToSetting: HomeEvent
+    data object NavigateToLocationPicker: HomeEvent
 }

@@ -3,7 +3,6 @@ package com.iqbalwork.ramadhancamp
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
-import com.iqbalwork.ramadhancamp.shared.common.ui.theme.RamadhanTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
@@ -14,30 +13,30 @@ import com.iqbalwork.ramadhancamp.core.domain.model.StartScreen
 import com.iqbalwork.ramadhancamp.core.presentation.mapper.toRootDestination
 import com.iqbalwork.ramadhancamp.feature.auth.presentation.AuthScreen
 import com.iqbalwork.ramadhancamp.feature.main.presentation.MainScreen
-import com.iqbalwork.ramadhancamp.shared.common.navigation.LocalAppNavController
+import com.iqbalwork.ramadhancamp.shared.common.navigation.LocalBackStackNode
 import com.iqbalwork.ramadhancamp.shared.common.navigation.RootDestination
-import com.iqbalwork.ramadhancamp.shared.common.navigation.getAppNavigationController
+import com.iqbalwork.ramadhancamp.shared.common.navigation.rememberRootBackStack
+import com.iqbalwork.ramadhancamp.shared.common.ui.theme.RamadhanTheme
 
 @Composable
 fun App(
     startScreen: StartScreen = StartScreen.Main,
 ) {
     RamadhanTheme {
-        val navController = getAppNavigationController(
-            startDestination = startScreen.toRootDestination(),
-        )
-        CompositionLocalProvider(LocalAppNavController provides navController) {
+        val backStackNode = rememberRootBackStack(startScreen.toRootDestination())
+
+        CompositionLocalProvider(LocalBackStackNode provides backStackNode) {
             NavDisplay(
-                backStack = navController.rootBackStack!!,
+                backStack = backStackNode.backStack,
                 entryDecorators = listOf(
                     rememberSaveableStateHolderNavEntryDecorator(),
                     rememberViewModelStoreNavEntryDecorator(),
                 ),
-                transitionSpec = { slideInHorizontally { it } togetherWith slideOutHorizontally { -it } },
+                transitionSpec    = { slideInHorizontally { it }  togetherWith slideOutHorizontally { -it } },
                 popTransitionSpec = { slideInHorizontally { -it } togetherWith slideOutHorizontally { it } },
                 entryProvider = entryProvider {
                     entry<RootDestination.Auth> { AuthScreen() }
-                    entry<RootDestination.Main> { MainScreen() }
+                    entry<RootDestination.Main> { dest -> MainScreen(dest.initialTab) }
                 },
             )
         }

@@ -2,8 +2,8 @@ package com.iqbalwork.ramadhancamp.feature.bookmark.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.iqbalwork.ramadhancamp.shared.common.navigation.AppNavigationController
-import com.iqbalwork.ramadhancamp.shared.common.navigation.AppTab
+import com.iqbalwork.ramadhancamp.feature.home.presentation.route.HomeTab
+import com.iqbalwork.ramadhancamp.shared.common.navigation.NavigationManager
 import com.iqbalwork.ramadhancamp.shared.common.navigation.DialogDestination
 import com.iqbalwork.ramadhancamp.shared.common.navigation.NavigationResult
 import com.iqbalwork.ramadhancamp.shared.common.navigation.TabDestination
@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class BookmarkViewModel(
-    private val navController: AppNavigationController,
+    private val navController: NavigationManager,
 ) : ViewModel() {
 
     companion object { const val RESULT_KEY = "bookmark_result" }
@@ -35,7 +35,7 @@ class BookmarkViewModel(
 
     fun navigateToDetail()  = navController.navigateToInsideTab(TabDestination.BookmarkDetail)
     fun replaceWithDetail() = navController.navigateToInsideTab(TabDestination.BookmarkDetail, withReplace = true)
-    fun switchToHome()      = navController.switchTab(AppTab.Home)
+    fun switchToHome()      = navController.switchTab(HomeTab)
     fun showBookmarkSheet() = navController.showDialog(DialogDestination.BookmarkSheet)
 
     fun navigateToSubDetail() = navController.navigateToInsideTab(TabDestination.BookmarkSubDetail)

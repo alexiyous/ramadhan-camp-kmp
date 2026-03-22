@@ -2,8 +2,8 @@ package com.iqbalwork.ramadhancamp.feature.qibla.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.iqbalwork.ramadhancamp.shared.common.navigation.AppNavigationController
-import com.iqbalwork.ramadhancamp.shared.common.navigation.AppTab
+import com.iqbalwork.ramadhancamp.feature.bookmark.presentation.route.BookmarkTab
+import com.iqbalwork.ramadhancamp.shared.common.navigation.NavigationManager
 import com.iqbalwork.ramadhancamp.shared.common.navigation.DialogDestination
 import com.iqbalwork.ramadhancamp.shared.common.navigation.NavigationResult
 import com.iqbalwork.ramadhancamp.shared.common.navigation.TabDestination
@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class QiblaViewModel(
-    private val navController: AppNavigationController,
+    private val navController: NavigationManager,
 ) : ViewModel() {
 
     companion object { const val RESULT_KEY = "qibla_result" }
@@ -35,7 +35,7 @@ class QiblaViewModel(
 
     fun navigateToDetail()  = navController.navigateToInsideTab(TabDestination.QiblaDetail)
     fun replaceWithDetail() = navController.navigateToInsideTab(TabDestination.QiblaDetail, withReplace = true)
-    fun switchToBookmark()  = navController.switchTab(AppTab.Bookmark)
+    fun switchToBookmark()  = navController.switchTab(BookmarkTab)
     fun showQiblaSheet()    = navController.showDialog(DialogDestination.QiblaSheet)
 
     fun navigateToSubDetail() = navController.navigateToInsideTab(TabDestination.QiblaSubDetail)

@@ -2,19 +2,20 @@ package com.iqbalwork.ramadhancamp.feature.quran.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.iqbalwork.ramadhancamp.shared.common.navigation.AppNavigationController
-import com.iqbalwork.ramadhancamp.shared.common.navigation.AppTab
+import com.iqbalwork.ramadhancamp.feature.qibla.presentation.route.QiblaTab
+import com.iqbalwork.ramadhancamp.shared.common.navigation.NavigationManager
 import com.iqbalwork.ramadhancamp.shared.common.navigation.DialogDestination
 import com.iqbalwork.ramadhancamp.shared.common.navigation.NavigationResult
 import com.iqbalwork.ramadhancamp.shared.common.navigation.TabDestination
 import com.iqbalwork.ramadhancamp.shared.common.navigation.TextResult
+import io.github.aakira.napier.log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class QuranViewModel(
-    private val navController: AppNavigationController,
+    private val navController: NavigationManager,
 ) : ViewModel() {
 
     companion object { const val RESULT_KEY = "quran_result" }
@@ -33,9 +34,12 @@ class QuranViewModel(
         }
     }
 
-    fun navigateToDetail()  = navController.navigateToInsideTab(TabDestination.QuranDetail)
+    fun navigateToDetail()  {
+        log { "${navController.hashCode()}" }
+        navController.navigateToInsideTab(TabDestination.QuranDetail)
+    }
     fun replaceWithDetail() = navController.navigateToInsideTab(TabDestination.QuranDetail, withReplace = true)
-    fun switchToQibla()     = navController.switchTab(AppTab.Qibla)
+    fun switchToQibla()     = navController.switchTab(QiblaTab)
     fun showQuranSheet()    = navController.showDialog(DialogDestination.QuranSheet)
 
     fun navigateToSubDetail() = navController.navigateToInsideTab(TabDestination.QuranSubDetail)

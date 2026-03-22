@@ -2,15 +2,17 @@ package com.iqbalwork.ramadhancamp.shared.common.navigation
 
 import androidx.navigation3.runtime.NavKey
 import androidx.savedstate.serialization.SavedStateConfiguration
+import com.iqbalwork.ramadhancamp.shared.common.navigation.FeatureTab
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 
-enum class AppTab { Home, Pray, Quran, Qibla, Bookmark }
-
 @Serializable
 sealed interface RootDestination : NavKey {
-    @Serializable data class Main(val initialTab: AppTab = AppTab.Home) : RootDestination
+    @Serializable data class Main(
+        @Transient val initialTab: FeatureTab? = null,
+    ) : RootDestination
     @Serializable data object Auth : RootDestination
 }
 

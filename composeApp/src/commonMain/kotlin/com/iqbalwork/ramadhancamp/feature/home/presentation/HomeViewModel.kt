@@ -9,7 +9,7 @@ import com.iqbalwork.ramadhancamp.feature.home.presentation.mapper.toUiModel
 import com.iqbalwork.ramadhancamp.feature.home.presentation.model.HomeEffect
 import com.iqbalwork.ramadhancamp.feature.home.presentation.model.HomeEvent
 import com.iqbalwork.ramadhancamp.feature.home.presentation.model.HomeState
-import com.iqbalwork.ramadhancamp.shared.common.navigation.AppNavigationController
+import com.iqbalwork.ramadhancamp.shared.common.navigation.NavigationManager
 import com.iqbalwork.ramadhancamp.shared.common.navigation.NavigationResultData
 import com.iqbalwork.ramadhancamp.shared.common.navigation.TabDestination
 import com.iqbalwork.ramadhancamp.shared.common.ui.BaseViewModel
@@ -21,7 +21,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
 class HomeViewModel(
-    navController: AppNavigationController,
+    navController: NavigationManager,
     private val homeRepository: HomeRepository,
 ) : BaseViewModel<Unit, HomeState, HomeEvent, HomeEffect>(
     params = Unit,
@@ -113,7 +113,7 @@ class HomeViewModel(
     private suspend fun getShalatSchedule(province: String, city: String) {
         homeRepository.getShalatSchedule(province, city)
             .onFailure {
-                navigationManager.navigateToInsideTab(TabDestination.HomeLocationPicker)
+                navigationManager.navigateTo(TabDestination.HomeLocationPicker)
             }
         updateState {
             copy(isLoading = false, appError = null, emptyErrorState = null)
@@ -131,6 +131,7 @@ class HomeViewModel(
                             screenData = screenData.copy(
                                 city = result.city,
                                 country = result.country,
+                                selectThroughPicker = true
                             )
                         )
                     }
@@ -144,6 +145,7 @@ class HomeViewModel(
         when (event) {
             HomeEvent.LoadInitialData -> viewModelScope.launch { initData() }
             HomeEvent.GoToSetting -> goToDeviceSettings()
+            HomeEvent.NavigateToLocationPicker -> navigationManager.navigateTo(TabDestination.HomeLocationPicker)
         }
     }
 }

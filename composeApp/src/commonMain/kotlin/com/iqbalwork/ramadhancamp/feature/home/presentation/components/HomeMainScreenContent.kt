@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.iqbalwork.ramadhancamp.feature.home.presentation.model.HomeEvent
 import com.iqbalwork.ramadhancamp.feature.home.presentation.model.HomeState
+import com.iqbalwork.ramadhancamp.shared.common.extension.debouncedClickable
 import com.iqbalwork.ramadhancamp.shared.common.ui.components.error.ErrorEmptyState
 import com.iqbalwork.ramadhancamp.shared.common.ui.components.error.toErrorEmptyState
 import com.iqbalwork.ramadhancamp.shared.common.ui.components.loading.Loader
@@ -59,6 +60,9 @@ fun HomeMainScreenContent(
                         .statusBarsPadding()
                         .padding(horizontal = 24.dp)
                         .padding(top = 12.dp)
+                        .debouncedClickable {
+                            action(HomeEvent.NavigateToLocationPicker)
+                        }
                     ,
                     homeMainData = state.screenData,
                 )

@@ -11,16 +11,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.iqbalwork.ramadhancamp.shared.common.navigation.AppNavigationController
-import com.iqbalwork.ramadhancamp.shared.common.navigation.LocalAppNavController
+import com.iqbalwork.ramadhancamp.shared.common.navigation.LocalBackStackNode
 import com.iqbalwork.ramadhancamp.shared.common.navigation.RootDestination
 import com.iqbalwork.ramadhancamp.shared.common.presentation.DemoButton
 import com.iqbalwork.ramadhancamp.shared.common.presentation.DemoSection
-import org.koin.compose.koinInject
 
 @Composable
 fun AuthScreen() {
-    val navController: AppNavigationController = LocalAppNavController.current
+    val rootBackStack = LocalBackStackNode.current.backStack
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -35,13 +33,15 @@ fun AuthScreen() {
         )
         DemoSection("Root Navigation") {
             DemoButton("Navigate to Main (push)") {
-               navController.navigateTo(RootDestination.Main())
+                rootBackStack.add(RootDestination.Main())
             }
             DemoButton("Navigate to Main (replace)") {
-               navController.navigateTo(RootDestination.Main(), withReplace = true)
+                if (rootBackStack.isNotEmpty()) rootBackStack[rootBackStack.lastIndex] = RootDestination.Main()
+                else rootBackStack.add(RootDestination.Main())
             }
             DemoButton("Start New Flow → Main") {
-               navController.startNewFlow(RootDestination.Main())
+                rootBackStack.clear()
+                rootBackStack.add(RootDestination.Main())
             }
         }
     }

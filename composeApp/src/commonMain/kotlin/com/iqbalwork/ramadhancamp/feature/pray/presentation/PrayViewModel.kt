@@ -2,8 +2,8 @@ package com.iqbalwork.ramadhancamp.feature.pray.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.iqbalwork.ramadhancamp.shared.common.navigation.AppNavigationController
-import com.iqbalwork.ramadhancamp.shared.common.navigation.AppTab
+import com.iqbalwork.ramadhancamp.feature.quran.presentation.route.QuranTab
+import com.iqbalwork.ramadhancamp.shared.common.navigation.NavigationManager
 import com.iqbalwork.ramadhancamp.shared.common.navigation.DialogDestination
 import com.iqbalwork.ramadhancamp.shared.common.navigation.NavigationResult
 import com.iqbalwork.ramadhancamp.shared.common.navigation.TabDestination
@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class PrayViewModel(
-    private val navController: AppNavigationController,
+    private val navController: NavigationManager,
 ) : ViewModel() {
 
     companion object { const val RESULT_KEY = "pray_result" }
@@ -35,7 +35,7 @@ class PrayViewModel(
 
     fun navigateToDetail()  = navController.navigateToInsideTab(TabDestination.PrayDetail)
     fun replaceWithDetail() = navController.navigateToInsideTab(TabDestination.PrayDetail, withReplace = true)
-    fun switchToQuran()     = navController.switchTab(AppTab.Quran)
+    fun switchToQuran()     = navController.switchTab(QuranTab)
     fun showPraySheet()     = navController.showDialog(DialogDestination.PraySheet)
 
     fun navigateToSubDetail() = navController.navigateToInsideTab(TabDestination.PraySubDetail)

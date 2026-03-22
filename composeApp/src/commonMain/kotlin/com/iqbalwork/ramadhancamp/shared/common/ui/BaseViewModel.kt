@@ -5,7 +5,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.iqbalwork.ramadhancamp.shared.common.navigation.AppNavigationController
+import com.iqbalwork.ramadhancamp.shared.common.navigation.BackStackNode
+import com.iqbalwork.ramadhancamp.shared.common.navigation.TabState
+import com.iqbalwork.ramadhancamp.shared.common.navigation.NavigationManager
+import com.iqbalwork.ramadhancamp.shared.common.navigation.NavigationManagerImpl
 import com.iqbalwork.ramadhancamp.shared.common.navigation.NavigationResult
 import com.iqbalwork.ramadhancamp.shared.common.navigation.NavigationResultData
 import com.iqbalwork.ramadhancamp.shared.common.ui.components.snackbar.SnackBarData
@@ -17,6 +20,7 @@ import com.iqbalwork.ramadhancamp.shared.utils.TAG_LIVECYCLE_VM
 import com.iqbalwork.ramadhancamp.shared.utils.TAG_NAVIGATION_RESULT_CANCEL
 import com.iqbalwork.ramadhancamp.shared.utils.TAG_NAVIGATION_RESULT_SUCCESS
 import io.github.aakira.napier.Napier
+import io.github.aakira.napier.log
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,13 +30,18 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlin.concurrent.Volatile
 
 abstract class BaseViewModel<Params: UiParams, State : Any, Event : UiEvent, Effect : UiEffect>(
     protected val params: Params,
     initialState: State,
-    protected val navigationManager: AppNavigationController,
+    protected val navigationManager: NavigationManager,
     private vararg val resultKeys: String = emptyArray(),
 ) : ViewModel(), HandleEvent<Event> {
+
+    internal fun syncBackStack(node: BackStackNode, tabState: TabState?) {
+        (navigationManager as? NavigationManagerImpl)?.update(node, tabState)
+    }
 
     private val mutableState: MutableStateFlow<State> = MutableStateFlow(initialState)
     val state: StateFlow<State> = mutableState.asStateFlow()

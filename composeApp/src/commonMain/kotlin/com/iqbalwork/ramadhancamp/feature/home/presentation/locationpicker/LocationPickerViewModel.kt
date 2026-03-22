@@ -7,7 +7,7 @@ import com.iqbalwork.ramadhancamp.feature.home.presentation.locationpicker.model
 import com.iqbalwork.ramadhancamp.feature.home.presentation.locationpicker.model.LocationPickerState
 import com.iqbalwork.ramadhancamp.feature.home.presentation.locationpicker.model.LocationResult
 import com.iqbalwork.ramadhancamp.feature.home.presentation.locationpicker.model.canConfirm
-import com.iqbalwork.ramadhancamp.shared.common.navigation.AppNavigationController
+import com.iqbalwork.ramadhancamp.shared.common.navigation.NavigationManager
 import com.iqbalwork.ramadhancamp.shared.common.navigation.NavigationResult
 import com.iqbalwork.ramadhancamp.shared.common.ui.BaseViewModel
 import com.iqbalwork.ramadhancamp.shared.common.utils.toAppError
@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 const val LOCATION_PICKER_RESULT_KEY = "home_location_picker_result_key"
 
 class LocationPickerViewModel(
-    navController: AppNavigationController,
+    navController: NavigationManager,
     private val homeRepository: HomeRepository,
 ) : BaseViewModel<Unit, LocationPickerState, LocationPickerEvent, LocationPickerEffect>(
     params = Unit,
