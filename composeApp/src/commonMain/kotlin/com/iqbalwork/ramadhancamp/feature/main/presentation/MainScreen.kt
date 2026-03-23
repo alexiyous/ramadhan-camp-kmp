@@ -6,14 +6,13 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
@@ -44,6 +43,7 @@ fun MainScreen(initialTab: FeatureTab? = null) {
 
     val tabState = rememberTabState(mainTabs, resolvedInitial)
     val tabNodes = buildMap { mainTabs.forEach { tab -> put(tab, tab.backstack()) } }
+    val saveableStateHolder = rememberSaveableStateHolder()
 
     CompositionLocalProvider(LocalCurrentTab provides tabState) {
         Scaffold(
@@ -61,28 +61,29 @@ fun MainScreen(initialTab: FeatureTab? = null) {
                     .windowInsetsPadding(WindowInsets(bottom = innerPadding.calculateBottomPadding())),
             ) {
                 mainTabs.forEach { tab ->
-                    val tabNode = tabNodes[tab]!!
-                    CompositionLocalProvider(LocalBackStackNode provides tabNode) {
-                        NavDisplay(
-                            backStack       = tabNode.backStack,
-                            modifier        = Modifier
-                                .fillMaxSize()
-                                .then(if (tabState.current != tab) Modifier.requiredSize(0.dp) else Modifier),
-                            sceneStrategy   = BottomSheetSceneStrategy(
-                                onBack = { tabNode.backStack.removeLastOrNull() },
-                            ),
-                            entryDecorators = listOf(
-                                rememberSaveableStateHolderNavEntryDecorator(),
-                                rememberViewModelStoreNavEntryDecorator(),
-                            ),
-                            transitionSpec    = { slideInHorizontally { it }  togetherWith slideOutHorizontally { -it } },
-                            popTransitionSpec = { slideInHorizontally { -it } togetherWith slideOutHorizontally { it } },
-                            entryProvider     = entryProvider { with(tab) { registerEntries() } },
-                        )
+                    if (tabState.current == tab) {
+                        val tabNode = tabNodes[tab]!!
+                        saveableStateHolder.SaveableStateProvider(tab.label) {
+                            CompositionLocalProvider(LocalBackStackNode provides tabNode) {
+                                NavDisplay(
+                                    backStack       = tabNode.backStack,
+                                    modifier        = Modifier.fillMaxSize(),
+                                    sceneStrategy   = BottomSheetSceneStrategy(
+                                        onBack = { tabNode.backStack.removeLastOrNull() },
+                                    ),
+                                    entryDecorators = listOf(
+                                        rememberSaveableStateHolderNavEntryDecorator(),
+                                        rememberViewModelStoreNavEntryDecorator(),
+                                    ),
+                                    transitionSpec    = { slideInHorizontally { it }  togetherWith slideOutHorizontally { -it } },
+                                    popTransitionSpec = { slideInHorizontally { -it } togetherWith slideOutHorizontally { it } },
+                                    entryProvider     = entryProvider { with(tab) { registerEntries() } },
+                                )
+                            }
+                        }
                     }
                 }
             }
         }
     }
 }
-

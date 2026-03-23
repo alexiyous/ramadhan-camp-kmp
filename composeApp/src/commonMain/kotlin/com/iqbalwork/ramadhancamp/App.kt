@@ -23,7 +23,7 @@ fun App(
     startScreen: StartScreen = StartScreen.Main,
 ) {
     RamadhanTheme {
-        val backStackNode = rememberRootBackStack(startScreen.toRootDestination())
+        val backStackNode = rememberRootBackStack(startScreen.toRootDestination(), "APP")
 
         CompositionLocalProvider(LocalBackStackNode provides backStackNode) {
             NavDisplay(

@@ -57,12 +57,8 @@ fun HomeMainScreenContent(
                 AnimateContentState.Success -> HomeMainSuccessContent(
                     modifier = Modifier
                         .fillMaxSize()
-                        .statusBarsPadding()
                         .padding(horizontal = 24.dp)
                         .padding(top = 12.dp)
-                        .debouncedClickable {
-                            action(HomeEvent.NavigateToLocationPicker)
-                        }
                     ,
                     homeMainData = state.screenData,
                 )

@@ -28,7 +28,7 @@ object QuranTab : FeatureTab() {
     override val unselectedIcon: DrawableResource = Res.drawable.ic_outlined_book_tab
 
     @Composable
-    override fun backstack(): BackStackNode = rememberTabBackStack(initialDestination)
+    override fun backstack(): BackStackNode = rememberTabBackStack(initialDestination, label)
 
     override fun EntryProviderScope<NavKey>.registerEntries() {
         entry<TabDestination.QuranMain>      { QuranMainScreen() }

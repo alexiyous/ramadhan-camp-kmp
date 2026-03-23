@@ -34,4 +34,6 @@ fun rememberTabState(
     return remember { TabState(tabs, savedIndex, tabState) }
 }
 
-val LocalCurrentTab = compositionLocalOf<TabState?> { null }
+val LocalCurrentTab = compositionLocalOf<TabState> {
+    error("No TabState provided. Wrap your NavDisplay with CompositionLocalProvider(LocalCurrentTab provides tabState)")
+}

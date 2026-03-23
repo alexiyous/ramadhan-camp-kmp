@@ -28,7 +28,7 @@ object QiblaTab : FeatureTab() {
     override val unselectedIcon: DrawableResource = Res.drawable.ic_outlined_compass_tab
 
     @Composable
-    override fun backstack(): BackStackNode = rememberTabBackStack(initialDestination)
+    override fun backstack(): BackStackNode = rememberTabBackStack(initialDestination, label)
 
     override fun EntryProviderScope<NavKey>.registerEntries() {
         entry<TabDestination.QiblaMain>      { QiblaMainScreen() }

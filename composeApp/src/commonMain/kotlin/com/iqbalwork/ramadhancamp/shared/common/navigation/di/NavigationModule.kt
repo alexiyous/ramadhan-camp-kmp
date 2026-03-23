@@ -1,8 +1,10 @@
 package com.iqbalwork.ramadhancamp.shared.common.navigation.di
 
+import com.iqbalwork.ramadhancamp.shared.common.navigation.BackStackNode
 import com.iqbalwork.ramadhancamp.shared.common.navigation.NavigationManager
 import com.iqbalwork.ramadhancamp.shared.common.navigation.NavigationManagerImpl
 import com.iqbalwork.ramadhancamp.shared.common.navigation.ResultNavigationRepository
+import com.iqbalwork.ramadhancamp.shared.common.navigation.TabState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import org.koin.core.qualifier.named
@@ -21,5 +23,11 @@ val navigationModule = module {
         )
     }
 
-    factory { NavigationManagerImpl(get()) } bind NavigationManager::class
+    factory<NavigationManager> { params ->
+        NavigationManagerImpl(
+            resultRepository = get<ResultNavigationRepository>(),
+            currentNode = params.get<BackStackNode>(),
+            _tabState = params.get<TabState>(),
+        )
+    }
 }

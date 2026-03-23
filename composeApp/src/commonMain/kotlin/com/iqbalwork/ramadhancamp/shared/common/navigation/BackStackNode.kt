@@ -8,6 +8,7 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
 
 class BackStackNode(
+    val key: Any? = null,
     val backStack: NavBackStack<NavKey>,
     val parent: BackStackNode?,
 ) {
@@ -34,20 +35,20 @@ val LocalBackStackNode = staticCompositionLocalOf<BackStackNode> {
     )
 }
 @Composable
-fun rememberRootBackStack(initialDestination: NavKey): BackStackNode {
+fun rememberRootBackStack(initialDestination: NavKey, key: String): BackStackNode {
     val backStack = rememberNavBackStack(appSavedStateConfig, initialDestination)
-    return remember { BackStackNode(backStack = backStack, parent = null) }
+    return remember { BackStackNode(backStack = backStack, parent = null, key = key) }
 }
 
 @Composable
-fun rememberTabBackStack(initialDestination: NavKey): BackStackNode =
-    rememberChildBackStack(initialDestination)
+fun rememberTabBackStack(initialDestination: NavKey, key: String): BackStackNode =
+    rememberChildBackStack(initialDestination, key)
 
 @Composable
-fun rememberChildBackStack(initialDestination: NavKey): BackStackNode {
+fun rememberChildBackStack(initialDestination: NavKey, key: String): BackStackNode {
     val parent    = LocalBackStackNode.current
     val backStack = rememberNavBackStack(appSavedStateConfig, initialDestination)
-    return remember{ BackStackNode(backStack, parent = parent) }
+    return remember{ BackStackNode(backStack = backStack, parent = parent, key = key) }
 }
 
 

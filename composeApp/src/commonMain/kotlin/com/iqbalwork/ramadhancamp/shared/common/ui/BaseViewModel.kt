@@ -39,7 +39,7 @@ abstract class BaseViewModel<Params: UiParams, State : Any, Event : UiEvent, Eff
     private vararg val resultKeys: String = emptyArray(),
 ) : ViewModel(), HandleEvent<Event> {
 
-    internal fun syncBackStack(node: BackStackNode, tabState: TabState?) {
+    internal fun syncBackStack(node: BackStackNode, tabState: TabState) {
         (navigationManager as? NavigationManagerImpl)?.update(node, tabState)
     }
 

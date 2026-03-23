@@ -2,18 +2,17 @@ package com.iqbalwork.ramadhancamp.feature.home.presentation.locationpicker
 
 import androidx.lifecycle.viewModelScope
 import com.iqbalwork.ramadhancamp.feature.home.domain.repository.HomeRepository
+import com.iqbalwork.ramadhancamp.feature.home.presentation.HomeMainScreenParameters
 import com.iqbalwork.ramadhancamp.feature.home.presentation.locationpicker.model.LocationPickerEffect
 import com.iqbalwork.ramadhancamp.feature.home.presentation.locationpicker.model.LocationPickerEvent
 import com.iqbalwork.ramadhancamp.feature.home.presentation.locationpicker.model.LocationPickerState
 import com.iqbalwork.ramadhancamp.feature.home.presentation.locationpicker.model.LocationResult
 import com.iqbalwork.ramadhancamp.feature.home.presentation.locationpicker.model.canConfirm
 import com.iqbalwork.ramadhancamp.shared.common.navigation.NavigationManager
-import com.iqbalwork.ramadhancamp.shared.common.navigation.NavigationResult
+import com.iqbalwork.ramadhancamp.shared.common.navigation.TabDestination
 import com.iqbalwork.ramadhancamp.shared.common.ui.BaseViewModel
 import com.iqbalwork.ramadhancamp.shared.common.utils.toAppError
 import kotlinx.coroutines.launch
-
-const val LOCATION_PICKER_RESULT_KEY = "home_location_picker_result_key"
 
 class LocationPickerViewModel(
     navController: NavigationManager,
@@ -68,12 +67,13 @@ class LocationPickerViewModel(
                 if (!state.value.canConfirm) return
                 val city = state.value.selectedCity
                 val province = state.value.selectedProvince
-                navigationManager.back(
-                    NavigationResult.Success(
-                        key = LOCATION_PICKER_RESULT_KEY,
-                        value = LocationResult(country = "Indonesia", province = province!!, city = city!!),
-                    )
+                val locationData = LocationResult(
+                    city = city!!,
+                    province = province!!,
+                    country = "Indonesia"
                 )
+                navigationManager.navigateToInsideTab(TabDestination.HomeMain(
+                    HomeMainScreenParameters(locationData)), withReplace = true)
             }
             LocationPickerEvent.Cancel -> updateState { copy(selectedProvince = null, selectedCity = null) }
         }
