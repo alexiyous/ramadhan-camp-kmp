@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import com.iqbalwork.ramadhancamp.feature.pray.presentation.PrayMainScreen
+import com.iqbalwork.ramadhancamp.feature.pray.presentation.PrayMainScreenParameters
 import com.iqbalwork.ramadhancamp.shared.common.navigation.BackStackNode
 import com.iqbalwork.ramadhancamp.shared.common.navigation.FeatureTab
 import com.iqbalwork.ramadhancamp.shared.common.navigation.TabDestination
@@ -15,7 +16,7 @@ import ramadhancamp.composeapp.generated.resources.ic_prayer_tab
 
 @OptIn(ExperimentalMaterial3Api::class)
 object PrayTab : FeatureTab() {
-    override val initialDestination: NavKey = TabDestination.PrayMain
+    override val initialDestination: NavKey = TabDestination.PrayMain(PrayMainScreenParameters())
     override val label: String              = "Doa"
     override val selectedIcon: DrawableResource   = Res.drawable.ic_prayer_tab
     override val unselectedIcon: DrawableResource = Res.drawable.ic_prayer_tab
@@ -24,6 +25,6 @@ object PrayTab : FeatureTab() {
     override fun backstack(): BackStackNode = rememberTabBackStack(initialDestination, label)
 
     override fun EntryProviderScope<NavKey>.registerEntries() {
-        entry<TabDestination.PrayMain>      { PrayMainScreen() }
+        entry<TabDestination.PrayMain>      { PrayMainScreen(parameters = it.param) }
     }
 }

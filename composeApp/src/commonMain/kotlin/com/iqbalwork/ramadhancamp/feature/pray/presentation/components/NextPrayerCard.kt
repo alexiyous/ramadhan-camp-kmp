@@ -1,8 +1,15 @@
 package com.iqbalwork.ramadhancamp.feature.pray.presentation.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
@@ -11,10 +18,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.iqbalwork.ramadhancamp.feature.pray.presentation.model.PrayCountdownUiModel
 import com.iqbalwork.ramadhancamp.shared.common.ui.theme.RamadhanTheme
+import org.jetbrains.compose.resources.stringResource
+import ramadhancamp.composeapp.generated.resources.Res
+import ramadhancamp.composeapp.generated.resources.next_shalat_schedule
 
 @Composable
 fun NextPrayerCard(
@@ -26,7 +37,6 @@ fun NextPrayerCard(
 
     Box(
         modifier = modifier
-            .fillMaxWidth()
             .clip(RoundedCornerShape(24.dp))
             .background(
                 brush = Brush.linearGradient(
@@ -38,38 +48,30 @@ fun NextPrayerCard(
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                text = "NEXT PRAYER",
+                modifier = Modifier.padding(bottom = 4.dp),
+                text = stringResource(Res.string.next_shalat_schedule),
                 style = typography.labelSmall,
-                color = colors.accentPrimary.copy(alpha = 0.8f),
+                color = colors.bgAccentLight.copy(alpha = 0.8f),
                 letterSpacing = 0.7.sp
             )
 
             Text(
+                modifier = Modifier.padding(bottom = 24.dp),
                 text = countdown.prayerName,
                 style = typography.headlineLarge,
                 color = colors.textPrimary,
                 fontWeight = FontWeight.Bold
             )
 
-            Spacer(Modifier.height(8.dp))
-            Row(verticalAlignment = Alignment.Bottom) {
-                Text(
-                    text = "in ",
-                    style = typography.bodyLarge,
-                    color = colors.textSecondary
-                )
-                Text(
-                    text = countdown.remainingTime,
-                    style = typography.headlineLarge.copy(fontSize = 48.sp),
-                    color = colors.textPrimary,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            Spacer(Modifier.height(8.dp))
+            Text(
+                text = countdown.remainingTime,
+                style = typography.headlineLarge.copy(fontSize = 48.sp),
+                color = colors.textPrimary,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 22.dp)
+            )
 
             Row(
                 modifier = Modifier
@@ -82,35 +84,58 @@ fun NextPrayerCard(
                     Text(
                         text = countdown.prevPrayerName,
                         style = typography.labelSmall,
-                        color = colors.textSecondary
+                        color = colors.bgAccentLight.copy(alpha = 0.9f)
                     )
                     Text(
                         text = countdown.prevPrayerTime,
                         style = typography.bodyLarge,
-                        color = colors.textPrimary,
+                        color = colors.bgAccentLight.copy(alpha = 0.7f),
                         fontWeight = FontWeight.SemiBold
                     )
                 }
 
                 VerticalDivider(
                     modifier = Modifier.height(32.dp),
-                    color = colors.divider
+                    color = colors.dividerLightTeal
                 )
 
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = countdown.nextPrayerName,
                         style = typography.labelSmall,
-                        color = colors.textSecondary
+                        color = colors.bgAccentLight.copy(alpha = 0.9f)
                     )
                     Text(
                         text = countdown.nextPrayerTime,
                         style = typography.bodyLarge,
-                        color = colors.textPrimary,
+                        color = colors.bgAccentLight.copy(alpha = 0.7f),
                         fontWeight = FontWeight.SemiBold
                     )
                 }
             }
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun NextPrayerCardPreview() {
+    val dummyCountdown = PrayCountdownUiModel(
+        prayerName = "Dzuhur",
+        prayerTime = "11:45",
+        remainingTime = "00:45:00",
+        prevPrayerName = "Subuh",
+        prevPrayerTime = "04:30",
+        nextPrayerName = "Ashar",
+        nextPrayerTime = "15:00"
+    )
+
+    RamadhanTheme {
+        Surface(color = RamadhanTheme.colors.bgPrimary) {
+            NextPrayerCard(
+                countdown = dummyCountdown,
+                modifier = Modifier.padding(16.dp).fillMaxWidth()
+            )
         }
     }
 }

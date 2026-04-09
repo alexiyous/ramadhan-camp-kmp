@@ -4,6 +4,7 @@ import com.iqbalwork.ramadhancamp.feature.pray.data.datasource.PrayPreferences
 import com.iqbalwork.ramadhancamp.feature.pray.data.datasource.PrayRemoteDatasource
 import com.iqbalwork.ramadhancamp.feature.pray.data.repositories.PrayRepositoryImpl
 import com.iqbalwork.ramadhancamp.feature.pray.domain.repository.PrayRepository
+import com.iqbalwork.ramadhancamp.feature.pray.presentation.PrayMainScreenParameters
 import com.iqbalwork.ramadhancamp.feature.pray.presentation.PrayViewModel
 import com.iqbalwork.ramadhancamp.shared.common.navigation.BackStackNode
 import com.iqbalwork.ramadhancamp.shared.common.navigation.NavigationManager
@@ -28,7 +29,8 @@ val prayModule = module {
                     params.get<TabState>(),
                 )
             },
-            prayRepository = get(),
+            prayRepository = get<PrayRepository>(),
+            params = params.get<PrayMainScreenParameters>()
         )
     }
 }

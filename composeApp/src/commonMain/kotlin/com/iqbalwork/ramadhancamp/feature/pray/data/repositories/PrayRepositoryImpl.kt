@@ -18,7 +18,6 @@ import com.tweener.alarmee.model.Alarmee
 import com.tweener.alarmee.model.AndroidNotificationConfiguration
 import com.tweener.alarmee.model.AndroidNotificationPriority
 import com.tweener.alarmee.model.IosNotificationConfiguration
-import io.github.aakira.napier.log
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -35,7 +34,6 @@ import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.getString
 import ramadhancamp.composeapp.generated.resources.Res
-import ramadhancamp.composeapp.generated.resources.ic_shalat_notif_icon
 import ramadhancamp.composeapp.generated.resources.pray_notification_body
 import kotlin.time.Clock
 

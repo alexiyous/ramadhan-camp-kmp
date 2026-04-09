@@ -24,7 +24,7 @@ import com.iqbalwork.ramadhancamp.feature.main.presentation.utils.requireTabInLi
 import com.iqbalwork.ramadhancamp.feature.pray.presentation.route.PrayTab
 import com.iqbalwork.ramadhancamp.feature.qibla.presentation.route.QiblaTab
 import com.iqbalwork.ramadhancamp.feature.quran.presentation.route.QuranTab
-import com.iqbalwork.ramadhancamp.shared.common.bottomSheet.BottomSheetSceneStrategy
+import com.iqbalwork.ramadhancamp.shared.common.ui.components.bottomSheet.BottomSheetSceneStrategy
 import com.iqbalwork.ramadhancamp.shared.common.navigation.FeatureTab
 import com.iqbalwork.ramadhancamp.shared.common.navigation.LocalBackStackNode
 import com.iqbalwork.ramadhancamp.shared.common.navigation.LocalCurrentTab

@@ -24,3 +24,4 @@ fun String.toSeconds(): Int {
     val parts = split(":")
     return parts[0].toInt() * 3600 + parts[1].toInt() * 60
 }
+

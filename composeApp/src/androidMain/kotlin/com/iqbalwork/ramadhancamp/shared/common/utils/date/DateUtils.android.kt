@@ -2,12 +2,29 @@ package com.iqbalwork.ramadhancamp.shared.common.utils.date
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import java.time.LocalDate
+import kotlinx.datetime.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import kotlinx.datetime.toJavaLocalDate
+import kotlinx.datetime.toKotlinLocalDate
+
 
 @RequiresApi(Build.VERSION_CODES.O)
-actual fun getCurrentDateLocalized(): String {
-    val formatter = DateTimeFormatter.ofPattern(DAY_DATE_MONTH_YEAR_FORMAT, Locale.getDefault())
-    return LocalDate.now().format(formatter)
+actual fun getCurrentDateLocalized(formatPattern: DateFormatPattern): String {
+    val formatter = DateTimeFormatter.ofPattern(formatPattern.pattern, Locale.getDefault())
+    return java.time.LocalDate.now().format(formatter)
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+actual fun LocalDate.format(localeCode: String?, formatPattern: DateFormatPattern): String {
+    val locale = localeCode?.let { Locale.forLanguageTag(it) } ?: Locale.getDefault()
+    val formatter = DateTimeFormatter.ofPattern(formatPattern.pattern, locale)
+    return this.toJavaLocalDate().format(formatter)
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+actual fun String.toLocalDate(localeCode: String?, formatPattern: DateFormatPattern): LocalDate {
+    val locale = localeCode?.let { Locale.forLanguageTag(it) } ?: Locale.getDefault()
+    val formatter = DateTimeFormatter.ofPattern(formatPattern.pattern, locale)
+    return java.time.LocalDate.parse(this, formatter).toKotlinLocalDate()
 }

@@ -1,7 +1,5 @@
 import org.gradle.kotlin.dsl.commonMain
 import org.gradle.kotlin.dsl.get
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
-import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -38,19 +36,6 @@ kotlin {
         }
     }
 
-    jvm()
-
-    js {
-        browser()
-        binaries.executable()
-    }
-
-    @OptIn(ExperimentalWasmDsl::class)
-    wasmJs {
-        browser()
-        binaries.executable()
-    }
-
     sourceSets {
 
         androidMain.dependencies {
@@ -82,7 +67,6 @@ kotlin {
             implementation(libs.navigation3.ui)
             implementation(libs.navigation3.material3.adaptiveNavigation3)
             implementation(libs.navigation3.lifecycle.viewmodelNavigation3)
-         /*   implementation(libs.navigation3.browser)*/
 
             // DI
             implementation(project.dependencies.platform(libs.koin.bom))
@@ -118,13 +102,13 @@ kotlin {
             // Alarmee (prayer notifications)
             implementation(libs.alarmee)
 
+            // Permissions
+            implementation(libs.permissions.notifications)
+            implementation(libs.permissions.compose)
+
         }
         commonTest.dependencies {
             api(libs.kotlin.test)
-        }
-        jvmMain.dependencies {
-            api(compose.desktop.currentOs)
-            api(libs.kotlinx.coroutinesSwing)
         }
         nativeMain.dependencies {
             implementation(libs.compass.geocoder.mobile)
@@ -132,22 +116,6 @@ kotlin {
             implementation(libs.permissions.mobile)
 
             implementation(libs.ktor.client.darwin)
-        }
-        wasmJsMain.dependencies {
-            implementation(libs.compass.geocoder.web.googlemaps)
-            implementation(libs.compass.geocoder.web)
-        }
-    }
-}
-
-compose.desktop {
-    application {
-        mainClass = "com.iqbalwork.ramadhancamp.MainKt"
-
-        nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "com.iqbalwork.ramadhancamp"
-            packageVersion = "1.0.0"
         }
     }
 }

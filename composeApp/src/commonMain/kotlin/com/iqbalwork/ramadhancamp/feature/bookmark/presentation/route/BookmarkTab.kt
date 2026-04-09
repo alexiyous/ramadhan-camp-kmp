@@ -8,7 +8,7 @@ import com.iqbalwork.ramadhancamp.feature.bookmark.presentation.BookmarkDetailSc
 import com.iqbalwork.ramadhancamp.feature.bookmark.presentation.BookmarkMainScreen
 import com.iqbalwork.ramadhancamp.feature.bookmark.presentation.BookmarkSheetScreen
 import com.iqbalwork.ramadhancamp.feature.bookmark.presentation.BookmarkSubDetailScreen
-import com.iqbalwork.ramadhancamp.shared.common.bottomSheet.BottomSheetSceneStrategy
+import com.iqbalwork.ramadhancamp.shared.common.ui.components.bottomSheet.BottomSheetSceneStrategy
 import com.iqbalwork.ramadhancamp.shared.common.navigation.BackStackNode
 import com.iqbalwork.ramadhancamp.shared.common.navigation.DialogDestination
 import com.iqbalwork.ramadhancamp.shared.common.navigation.FeatureTab

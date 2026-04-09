@@ -3,6 +3,7 @@ package com.iqbalwork.ramadhancamp.shared.common.navigation
 import androidx.navigation3.runtime.NavKey
 import androidx.savedstate.serialization.SavedStateConfiguration
 import com.iqbalwork.ramadhancamp.feature.home.presentation.HomeMainScreenParameters
+import com.iqbalwork.ramadhancamp.feature.pray.presentation.PrayMainScreenParameters
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.modules.SerializersModule
@@ -19,10 +20,10 @@ sealed interface RootDestination : NavKey {
 @Serializable
 sealed interface TabDestination : NavKey {
     // Home
-    @Serializable data class HomeMain(val param: HomeMainScreenParameters)           : TabDestination
+    @Serializable data class HomeMain(val param: HomeMainScreenParameters) : TabDestination
     @Serializable data object HomeLocationPicker : TabDestination
     // Pray
-    @Serializable data object PrayMain       : TabDestination
+    @Serializable data class PrayMain(val param: PrayMainScreenParameters) : TabDestination
     // Quran
     @Serializable data object QuranMain      : TabDestination
     @Serializable data object QuranDetail    : TabDestination

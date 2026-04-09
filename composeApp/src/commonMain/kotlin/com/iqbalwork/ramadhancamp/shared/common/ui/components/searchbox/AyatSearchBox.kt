@@ -1,4 +1,4 @@
-package com.iqbalwork.ramadhancamp.shared.common.searchbox
+package com.iqbalwork.ramadhancamp.shared.common.ui.components.searchbox
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy

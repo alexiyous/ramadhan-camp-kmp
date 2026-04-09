@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.iqbalwork.ramadhancamp.feature.home.presentation.model.HomeScreenUiModel
-import com.iqbalwork.ramadhancamp.shared.common.searchbox.RamadhanSearchBox
+import com.iqbalwork.ramadhancamp.shared.common.ui.components.searchbox.RamadhanSearchBox
 import com.iqbalwork.ramadhancamp.shared.common.ui.theme.RamadhanTheme
 import org.jetbrains.compose.resources.stringResource
 import ramadhancamp.composeapp.generated.resources.Res

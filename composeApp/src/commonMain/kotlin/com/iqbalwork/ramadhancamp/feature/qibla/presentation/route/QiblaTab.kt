@@ -8,7 +8,7 @@ import com.iqbalwork.ramadhancamp.feature.qibla.presentation.QiblaDetailScreen
 import com.iqbalwork.ramadhancamp.feature.qibla.presentation.QiblaMainScreen
 import com.iqbalwork.ramadhancamp.feature.qibla.presentation.QiblaSheetScreen
 import com.iqbalwork.ramadhancamp.feature.qibla.presentation.QiblaSubDetailScreen
-import com.iqbalwork.ramadhancamp.shared.common.bottomSheet.BottomSheetSceneStrategy
+import com.iqbalwork.ramadhancamp.shared.common.ui.components.bottomSheet.BottomSheetSceneStrategy
 import com.iqbalwork.ramadhancamp.shared.common.navigation.BackStackNode
 import com.iqbalwork.ramadhancamp.shared.common.navigation.DialogDestination
 import com.iqbalwork.ramadhancamp.shared.common.navigation.FeatureTab

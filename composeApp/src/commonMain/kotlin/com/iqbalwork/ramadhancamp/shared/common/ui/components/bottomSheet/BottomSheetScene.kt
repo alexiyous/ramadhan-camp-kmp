@@ -1,4 +1,4 @@
-package com.iqbalwork.ramadhancamp.shared.common.bottomSheet
+package com.iqbalwork.ramadhancamp.shared.common.ui.components.bottomSheet
 
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet

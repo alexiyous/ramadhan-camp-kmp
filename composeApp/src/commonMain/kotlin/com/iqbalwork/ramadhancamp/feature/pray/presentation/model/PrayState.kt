@@ -10,7 +10,7 @@ data class PrayState(
     val isLoading: Boolean = false,
     val city: String = "",
     val hasLocation: Boolean = false,
-    val selectedDate: LocalDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date,
+    val selectedDate: String = "",
     val countdown: PrayCountdownUiModel? = null,
     val prayers: List<PrayItemUiModel> = emptyList(),
     val isDatePickerVisible: Boolean = false,

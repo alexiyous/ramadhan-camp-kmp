@@ -2,13 +2,22 @@ package com.iqbalwork.ramadhancamp.feature.pray.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.NotificationsOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -16,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.iqbalwork.ramadhancamp.feature.pray.domain.model.Prayers
 import com.iqbalwork.ramadhancamp.feature.pray.presentation.model.PrayItemUiModel
@@ -48,7 +58,6 @@ fun PrayerRowItem(
 
     Box(
         modifier = modifier
-            .fillMaxWidth()
             .alpha(rowAlpha)
             .clip(RoundedCornerShape(12.dp))
             .then(borderModifier)
@@ -59,7 +68,7 @@ fun PrayerRowItem(
                 modifier = Modifier
                     .align(Alignment.CenterStart)
                     .width(4.dp)
-                    .fillMaxHeight()
+                    .matchParentSize()
                     .background(
                         color = colors.accentPrimary,
                         shape = RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp)
@@ -130,6 +139,71 @@ fun PrayerRowItem(
                         )
                     }
 
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun PrayerRowItemPreviews() {
+    RamadhanTheme {
+        Surface(color = RamadhanTheme.colors.bgPrimary) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Scenario 1: Normal row, Alarm is OFF
+                PrayerRowItem(
+                    item = PrayItemUiModel(
+                        key = Prayers.SUBUH,
+                        displayName = "Fajr",
+                        time = "04:30",
+                        icon = Icons.Default.NotificationsActive,
+                        isNextPrayer = false,
+                        isAlarmOn = false
+                    ),
+                    onAlarmToggle = { _, _ -> }
+                )
+
+                // Scenario 2: Normal row, Alarm is ON
+                PrayerRowItem(
+                    item = PrayItemUiModel(
+                        key = Prayers.DZUHUR,
+                        displayName = "Dhuhr",
+                        time = "11:45",
+                        icon = Icons.Default.NotificationsActive,
+                        isNextPrayer = false,
+                        isAlarmOn = true
+                    ),
+                    onAlarmToggle = { _, _ -> }
+                )
+
+                // Scenario 3: Highlighted (Next Prayer), Alarm is OFF
+                PrayerRowItem(
+                    item = PrayItemUiModel(
+                        key = Prayers.ASHAR,
+                        displayName = "Asr",
+                        time = "15:00",
+                        icon = Icons.Default.NotificationsActive,
+                        isNextPrayer = true,
+                        isAlarmOn = false
+                    ),
+                    onAlarmToggle = { _, _ -> }
+                )
+
+                // Scenario 4: Highlighted (Next Prayer), Alarm is ON
+                PrayerRowItem(
+                    item = PrayItemUiModel(
+                        key = Prayers.MAGHRIB,
+                        displayName = "Maghrib",
+                        time = "17:45",
+                        icon = Icons.Default.NotificationsActive,
+                        isNextPrayer = true,
+                        isAlarmOn = true
+                    ),
+                    onAlarmToggle = { _, _ -> }
+                )
             }
         }
     }

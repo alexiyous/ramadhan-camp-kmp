@@ -1,4 +1,4 @@
-package com.iqbalwork.ramadhancamp.shared.common.card
+package com.iqbalwork.ramadhancamp.shared.common.ui.components.card
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

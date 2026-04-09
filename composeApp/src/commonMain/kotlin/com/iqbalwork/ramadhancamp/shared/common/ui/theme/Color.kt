@@ -29,6 +29,7 @@ internal val textOnLight = Color(0xFF1A2E28)
 
 // Borders / Dividers#10221DF2
 internal val divider = Color(0xFF064C39)
+internal val dividerLightTeal = Color(0xFF10B981)
 internal val borderLight = Color(0xFFCBD5E1)
 
 // Status

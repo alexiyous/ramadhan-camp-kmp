@@ -10,29 +10,50 @@ import com.iqbalwork.ramadhancamp.feature.pray.presentation.model.PrayState
 import com.iqbalwork.ramadhancamp.shared.common.navigation.NavigationManager
 import com.iqbalwork.ramadhancamp.shared.common.ui.BaseViewModel
 import com.iqbalwork.ramadhancamp.shared.common.utils.AppError
+import com.iqbalwork.ramadhancamp.shared.common.utils.date.DateFormatPattern
+import com.iqbalwork.ramadhancamp.shared.common.utils.date.format
 import com.iqbalwork.ramadhancamp.shared.common.utils.toAppError
+import dev.icerock.moko.permissions.DeniedAlwaysException
+import dev.icerock.moko.permissions.DeniedException
+import dev.icerock.moko.permissions.Permission
+import dev.icerock.moko.permissions.RequestCanceledException
+import dev.icerock.moko.permissions.notifications.REMOTE_NOTIFICATION
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
 
 class PrayViewModel(
+    params: PrayMainScreenParameters,
     navController: NavigationManager,
     private val prayRepository: PrayRepository,
-) : BaseViewModel<Unit, PrayState, PrayEvent, PrayEffect>(
-    params = Unit,
+) : BaseViewModel<PrayMainScreenParameters, PrayState, PrayEvent, PrayEffect>(
+    params = params,
     initialState = PrayState(),
     navigationManager = navController,
     resultKeys = arrayOf(),
 ) {
     private var hasLoadTodaySchedule = false
+    val permissionController = params.permissionController
 
     init {
         viewModelScope.apply {
+            launch { requestNotifPermission() }
             launch { initPraySchedule() }
             launch { initNextPraySchedule() }
         }
+    }
+
+    private suspend fun requestNotifPermission() {
+        try {
+            params.permissionController?.providePermission(Permission.REMOTE_NOTIFICATION)
+        } catch (_: DeniedAlwaysException) {
+            sendEffect(PrayEffect.ShowPermissionsDeniedDialog)
+        }
+        catch (_: DeniedException) {}
+        catch (_: RequestCanceledException) {}
     }
 
     private suspend fun initPraySchedule() {
@@ -60,7 +81,7 @@ class PrayViewModel(
             PrayEvent.OpenDatePicker -> updateState { copy(isDatePickerVisible = true) }
             PrayEvent.CloseDatePicker -> updateState { copy(isDatePickerVisible = false) }
             PrayEvent.RetryLoadSchedule -> viewModelScope.launch {
-                if (hasLoadTodaySchedule) loadScheduleForDate(state.value.selectedDate)
+                if (hasLoadTodaySchedule) loadScheduleForDate(LocalDateTime.parse(state.value.selectedDate).date)
                 else loadTodaySchedule()
             }
         }
@@ -68,7 +89,7 @@ class PrayViewModel(
 
     private suspend fun loadTodaySchedule() {
         val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
-        updateState { copy(error = null, selectedDate = today) }
+        updateState { copy(error = null, selectedDate = today.format(formatPattern = DateFormatPattern.SHORT_DAY_DATE_MONTH_YEAR)) }
         prayRepository.loadSchedule(today)
             .onSuccess { schedule ->
                 updateState { copy(isLoading = false, prayers = schedule.prayers.map { it.toUiModel() }, hasLocation = true) }
@@ -86,7 +107,13 @@ class PrayViewModel(
     }
 
     private suspend fun loadScheduleForDate(date: LocalDate) {
-        updateState { copy(isLoading = true, error = null, selectedDate = date, isDatePickerVisible = false) }
+        updateState {
+            copy(
+                isLoading = true,
+                error = null,
+                selectedDate = date.format(formatPattern = DateFormatPattern.SHORT_DAY_DATE_MONTH_YEAR),
+                isDatePickerVisible = false)
+        }
         prayRepository.loadSchedule(date)
             .onSuccess { schedule ->
                 updateState { copy(isLoading = false, prayers = schedule.prayers.map { it.toUiModel() }) }

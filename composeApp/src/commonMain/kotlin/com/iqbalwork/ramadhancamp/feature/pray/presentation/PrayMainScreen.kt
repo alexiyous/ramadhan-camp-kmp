@@ -5,15 +5,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -21,8 +17,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -30,19 +29,27 @@ import com.iqbalwork.ramadhancamp.feature.pray.presentation.components.NextPraye
 import com.iqbalwork.ramadhancamp.feature.pray.presentation.components.NoLocationPlaceholder
 import com.iqbalwork.ramadhancamp.feature.pray.presentation.components.PrayHeader
 import com.iqbalwork.ramadhancamp.feature.pray.presentation.components.PrayerRowItem
+import com.iqbalwork.ramadhancamp.feature.pray.presentation.model.PrayEffect
 import com.iqbalwork.ramadhancamp.feature.pray.presentation.model.PrayEvent
 import com.iqbalwork.ramadhancamp.feature.pray.presentation.model.PrayState
 import com.iqbalwork.ramadhancamp.shared.common.extension.rememberViewModel
-import com.iqbalwork.ramadhancamp.shared.common.ui.components.error.ErrorEmptyState
+import com.iqbalwork.ramadhancamp.shared.common.ui.ScreenUiParams
 import com.iqbalwork.ramadhancamp.shared.common.ui.components.error.RamadhanErrorEmptyState
 import com.iqbalwork.ramadhancamp.shared.common.ui.components.error.toErrorEmptyState
 import com.iqbalwork.ramadhancamp.shared.common.ui.components.loading.Loader
 import com.iqbalwork.ramadhancamp.shared.common.ui.rememberDispatch
 import com.iqbalwork.ramadhancamp.shared.common.ui.theme.RamadhanTheme
 import com.iqbalwork.ramadhancamp.shared.common.utils.AppError
+import dev.icerock.moko.permissions.PermissionsController
+import dev.icerock.moko.permissions.compose.BindEffect
+import dev.icerock.moko.permissions.compose.rememberPermissionsControllerFactory
+import kotlinx.coroutines.flow.Flow
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
+import org.koin.core.parameter.parametersOf
 
 private sealed interface AnimateContentState {
     data object Loading : AnimateContentState
@@ -51,15 +58,30 @@ private sealed interface AnimateContentState {
     data object Success : AnimateContentState
 }
 
+@Serializable
+data class PrayMainScreenParameters(
+    @Transient
+    val permissionController: PermissionsController? = null
+): ScreenUiParams()
+
 @Composable
-fun PrayMainScreen() {
-    val viewModel: PrayViewModel = rememberViewModel()
+fun PrayMainScreen(
+    parameters: PrayMainScreenParameters
+) {
+    val permissionController = rememberPermissionsControllerFactory().createPermissionsController()
+    val params = parameters.copy(permissionController = permissionController)
+    val viewModel: PrayViewModel = rememberViewModel(parameters = { parametersOf(params) })
     val state by viewModel.state.collectAsStateWithLifecycle()
     PrayContent(
         modifier = Modifier.fillMaxSize(),
         state = state,
-        action = viewModel.rememberDispatch()
+        action = viewModel.rememberDispatch(),
+        effects = viewModel.effects
     )
+
+    viewModel.permissionController?.let { permissionsController ->
+        BindEffect(permissionsController)
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -67,9 +89,19 @@ fun PrayMainScreen() {
 fun PrayContent(
     modifier: Modifier,
     state: PrayState,
-    action: (PrayEvent) -> Unit
+    action: (PrayEvent) -> Unit,
+    effects: Flow<PrayEffect>
 ) {
     val colors = RamadhanTheme.colors
+    var showPermissionAlertDialog by rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(effects) {
+        effects.collect { effect ->
+            when(effect) {
+                is PrayEffect.ShowPermissionsDeniedDialog -> showPermissionAlertDialog = true
+            }
+        }
+    }
 
     Box(
         modifier = modifier
@@ -97,40 +129,7 @@ fun PrayContent(
                 )
 
                 is AnimateContentState.Success -> {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(bottom = 100.dp)
-                    ) {
-                        item {
-                            PrayHeader(
-                                city = state.city,
-                                selectedDate = state.selectedDate,
-                                onCalendarClick = { action(PrayEvent.OpenDatePicker) }
-                            )
-                        }
 
-                        state.countdown?.let { countdown ->
-                            item {
-                                NextPrayerCard(
-                                    countdown = countdown,
-                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                                )
-                            }
-                        }
-
-                        item {
-                            Spacer(Modifier.height(16.dp))
-                        }
-                        items(state.prayers, key = { it.key }) { prayer ->
-                            PrayerRowItem(
-                                item = prayer,
-                                onAlarmToggle = { key, enabled ->
-                                    action(PrayEvent.ToggleAlarm(key, enabled))
-                                },
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
-                            )
-                        }
-                    }
                 }
             }
         }

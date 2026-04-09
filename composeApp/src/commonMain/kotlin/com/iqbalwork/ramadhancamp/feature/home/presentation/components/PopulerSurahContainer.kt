@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -16,7 +15,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
 import com.iqbalwork.ramadhancamp.feature.home.presentation.model.SurahUiModel
-import com.iqbalwork.ramadhancamp.shared.common.card.RamadhanCardItem
+import com.iqbalwork.ramadhancamp.shared.common.ui.components.card.RamadhanCardItem
 import com.iqbalwork.ramadhancamp.shared.common.ui.theme.RamadhanTheme
 import org.jetbrains.compose.resources.stringResource
 import ramadhancamp.composeapp.generated.resources.Res

@@ -1,8 +1,14 @@
 package com.iqbalwork.ramadhancamp.shared.common.utils.date
 
-/**
- * Standard Indonesian Gregorian format: "Selasa, 24 Maret 2024"
- */
-const val DAY_DATE_MONTH_YEAR_FORMAT = "EEEE, d MMMM yyyy"
+import kotlinx.datetime.LocalDate
 
-expect fun getCurrentDateLocalized(): String
+enum class DateFormatPattern(val pattern: String) {
+    DAY_DATE_MONTH_YEAR("EEEE, d MMMM yyyy"), // e.g. "Tuesday, 14 October 2026"
+    SHORT_DAY_DATE_MONTH_YEAR("EEE, d MMM yyyy"), // e.g. "Tue, 14 Oct 2026"
+}
+
+expect fun getCurrentDateLocalized(formatPattern: DateFormatPattern = DateFormatPattern.DAY_DATE_MONTH_YEAR): String
+
+expect fun LocalDate.format(localeCode: String? = null, formatPattern: DateFormatPattern): String
+
+expect fun String.toLocalDate(localeCode: String? = null, formatPattern: DateFormatPattern): LocalDate

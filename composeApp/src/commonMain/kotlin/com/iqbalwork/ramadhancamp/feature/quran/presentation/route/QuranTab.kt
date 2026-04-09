@@ -8,7 +8,7 @@ import com.iqbalwork.ramadhancamp.feature.quran.presentation.QuranDetailScreen
 import com.iqbalwork.ramadhancamp.feature.quran.presentation.QuranMainScreen
 import com.iqbalwork.ramadhancamp.feature.quran.presentation.QuranSheetScreen
 import com.iqbalwork.ramadhancamp.feature.quran.presentation.QuranSubDetailScreen
-import com.iqbalwork.ramadhancamp.shared.common.bottomSheet.BottomSheetSceneStrategy
+import com.iqbalwork.ramadhancamp.shared.common.ui.components.bottomSheet.BottomSheetSceneStrategy
 import com.iqbalwork.ramadhancamp.shared.common.navigation.BackStackNode
 import com.iqbalwork.ramadhancamp.shared.common.navigation.DialogDestination
 import com.iqbalwork.ramadhancamp.shared.common.navigation.FeatureTab
