@@ -33,5 +33,8 @@
     <string name="set_location_in_home_tab">Tolong Pilih Lokasi Anda Di Beranda Agar Jadwal Shalat Tersedia</string>
     <string name="pray_notification_body">Waktunya untuk salat %1$s</string>
     <string name="next_shalat_schedule">BERIKUTNYA</string>
+    <string name="next_uppercase">BERIKUTNYA</string>
+    <string name="pilih">Pilih</string>
+    <string name="batal">Batal</string>
 
 </resources>

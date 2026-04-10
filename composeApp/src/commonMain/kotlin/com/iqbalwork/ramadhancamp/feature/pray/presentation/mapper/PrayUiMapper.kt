@@ -4,7 +4,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bedtime
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Nightlight
+import androidx.compose.material.icons.filled.WbCloudy
 import androidx.compose.material.icons.filled.WbTwilight
+import androidx.compose.material.icons.outlined.Bedtime
+import androidx.compose.material.icons.outlined.LightMode
+import androidx.compose.material.icons.outlined.Nightlight
+import androidx.compose.material.icons.outlined.WbCloudy
+import androidx.compose.material.icons.outlined.WbTwilight
 import com.iqbalwork.ramadhancamp.feature.pray.domain.model.PrayCountdown
 import com.iqbalwork.ramadhancamp.feature.pray.domain.model.PrayItem
 import com.iqbalwork.ramadhancamp.feature.pray.presentation.model.PrayCountdownUiModel
@@ -17,11 +23,11 @@ fun PrayItem.toUiModel(): PrayItemUiModel = PrayItemUiModel(
     displayName = displayName,
     time = time,
     icon = when (key) {
-        Prayers.SUBUH   -> Icons.Default.Bedtime
-        Prayers.DZUHUR  -> Icons.Default.LightMode
-        Prayers.ASHAR   -> Icons.Default.WbTwilight
-        Prayers.MAGHRIB -> Icons.Default.WbTwilight
-        Prayers.ISYA    -> Icons.Default.Nightlight
+        Prayers.SUBUH   -> Icons.Outlined.Bedtime
+        Prayers.DZUHUR  -> Icons.Outlined.LightMode
+        Prayers.ASHAR   -> Icons.Outlined.WbCloudy
+        Prayers.MAGHRIB -> Icons.Outlined.WbTwilight
+        Prayers.ISYA    -> Icons.Outlined.Nightlight
     },
     isNextPrayer = isNextPrayer,
     isAlarmOn = isAlarmOn,

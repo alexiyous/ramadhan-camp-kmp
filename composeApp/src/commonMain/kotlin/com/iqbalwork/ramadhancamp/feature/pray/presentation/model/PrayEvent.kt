@@ -7,7 +7,6 @@ import kotlinx.datetime.LocalDate
 sealed interface PrayEvent : UiEvent {
     data class DateSelected(val date: LocalDate) : PrayEvent
     data class ToggleAlarm(val prayerKey: Prayers, val enabled: Boolean) : PrayEvent
-    data object OpenDatePicker : PrayEvent
-    data object CloseDatePicker : PrayEvent
     data object RetryLoadSchedule : PrayEvent
+    data object GoToSetting : PrayEvent
 }

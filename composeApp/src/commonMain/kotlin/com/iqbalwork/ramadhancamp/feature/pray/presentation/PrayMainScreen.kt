@@ -28,6 +28,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.iqbalwork.ramadhancamp.feature.pray.presentation.components.NextPrayerCard
 import com.iqbalwork.ramadhancamp.feature.pray.presentation.components.NoLocationPlaceholder
 import com.iqbalwork.ramadhancamp.feature.pray.presentation.components.PrayHeader
+import com.iqbalwork.ramadhancamp.feature.pray.presentation.components.PrayScreenSuccessContent
 import com.iqbalwork.ramadhancamp.feature.pray.presentation.components.PrayerRowItem
 import com.iqbalwork.ramadhancamp.feature.pray.presentation.model.PrayEffect
 import com.iqbalwork.ramadhancamp.feature.pray.presentation.model.PrayEvent
@@ -129,31 +130,25 @@ fun PrayContent(
                 )
 
                 is AnimateContentState.Success -> {
-
-                }
-            }
-        }
-
-        if (state.isDatePickerVisible) {
-            val datePickerState = rememberDatePickerState()
-            DatePickerDialog(
-                onDismissRequest = { action(PrayEvent.CloseDatePicker) },
-                confirmButton = {
-                    TextButton(onClick = {
-                        datePickerState.selectedDateMillis?.let { millis ->
-                            val date = Instant.fromEpochMilliseconds(millis)
-                                .toLocalDateTime(TimeZone.currentSystemDefault()).date
-                            action(PrayEvent.DateSelected(date))
+                    PrayScreenSuccessContent(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 16.dp),
+                        showPermissionDialog = showPermissionAlertDialog,
+                        currentCity = state.city,
+                        currentCountry = state.country,
+                        selectedDate = state.selectedDate,
+                        countdown = state.countdown,
+                        prayers = state.prayers,
+                        onAlarmClicked = { key, enabled -> action(PrayEvent.ToggleAlarm(key, enabled)) },
+                        onDateSelect = { date -> action(PrayEvent.DateSelected(date)) },
+                        onPermissionCancel = { showPermissionAlertDialog = false },
+                        onPermissionConfirm = {
+                            showPermissionAlertDialog = false
+                            action(PrayEvent.GoToSetting)
                         }
-                    }) { Text("OK") }
-                },
-                dismissButton = {
-                    TextButton(onClick = { action(PrayEvent.CloseDatePicker) }) {
-                        Text("Cancel")
-                    }
+                    )
                 }
-            ) {
-                DatePicker(state = datePickerState)
             }
         }
     }

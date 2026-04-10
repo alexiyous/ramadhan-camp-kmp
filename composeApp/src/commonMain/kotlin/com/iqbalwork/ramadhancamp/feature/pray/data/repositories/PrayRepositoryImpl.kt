@@ -7,6 +7,7 @@ import com.iqbalwork.ramadhancamp.feature.pray.data.datasource.PrayRemoteDatasou
 import com.iqbalwork.ramadhancamp.feature.pray.data.mapper.timeForKey
 import com.iqbalwork.ramadhancamp.feature.pray.data.mapper.toPrayCountdown
 import com.iqbalwork.ramadhancamp.feature.pray.data.mapper.toPrayItems
+import com.iqbalwork.ramadhancamp.feature.pray.domain.model.LastLocation
 import com.iqbalwork.ramadhancamp.feature.pray.domain.model.PrayCountdown
 import com.iqbalwork.ramadhancamp.feature.pray.domain.model.PraySchedule
 import com.iqbalwork.ramadhancamp.feature.pray.domain.model.Prayers
@@ -25,6 +26,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
@@ -45,17 +47,27 @@ class PrayRepositoryImpl(
     private val alarmeeService: AlarmeeService,
 ) : PrayRepository {
 
-    override val lastCity: StateFlow<String?> = homePreferences.lastCityStateFlow()
+    override val lastLocation: Flow<LastLocation?> = homePreferences.lastCityStateFlow().map {
+        val city = it ?: return@map null
+        val country = homePreferences.lastCountry ?: return@map null
+        LastLocation(city, country)
+    }
+
     private val todayScheduleFlow = MutableStateFlow<ShalatScheduleDto?>(null)
 
     override val countdown: Flow<PrayCountdown> = todayScheduleFlow
         .flatMapLatest { schedule ->
             flow {
                 while (true) {
-                    val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-                    schedule?.data?.jadwal
-                        ?.find { it.tanggal == now.day }
-                        ?.let { emit(it.toPrayCountdown(now)) }
+                    val now = Clock.System.now()
+                    val tz = TimeZone.currentSystemDefault()
+                    val nowLocal = now.toLocalDateTime(tz)
+                    val tomorrowLocal = now.plus(1, DateTimeUnit.DAY, tz).toLocalDateTime(tz)
+
+                    val todayJadwal = schedule?.data?.jadwal?.find { it.tanggal == nowLocal.day }
+                    val tomorrowJadwal = schedule?.data?.jadwal?.find { it.tanggal == tomorrowLocal.day }
+
+                    todayJadwal?.let { emit(it.toPrayCountdown(nowLocal, tomorrowJadwal)) }
                     delay(1000L)
                 }
             }

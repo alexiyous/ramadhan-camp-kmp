@@ -21,7 +21,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
+import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
 
@@ -42,11 +44,16 @@ class HomeRepositoryImpl(
         .flatMapLatest { schedule ->
             flow {
                 while (true) {
-                    val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-                    schedule?.data?.jadwal
-                        ?.find { it.tanggal == now.day }
-                        ?.let { emit(it.nextPrayer(now)) }
-                    val secondsUntilNextMinute = 60 - now.second
+                    val now = Clock.System.now()
+                    val tz = TimeZone.currentSystemDefault()
+                    val nowLocal = now.toLocalDateTime(tz)
+                    val tomorrowLocal = now.plus(1, DateTimeUnit.DAY, tz).toLocalDateTime(tz)
+
+                    val todayJadwal = schedule?.data?.jadwal?.find { it.tanggal == nowLocal.day }
+                    val tomorrowJadwal = schedule?.data?.jadwal?.find { it.tanggal == tomorrowLocal.day }
+
+                    todayJadwal?.let { emit(it.nextPrayer(nowLocal, tomorrowJadwal)) }
+                    val secondsUntilNextMinute = 60 - nowLocal.second
                     delay(secondsUntilNextMinute * 1000L)
                 }
             }

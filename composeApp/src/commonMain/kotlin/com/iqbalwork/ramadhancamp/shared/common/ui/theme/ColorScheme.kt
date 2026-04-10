@@ -28,6 +28,7 @@ data class RamadhanColorScheme(
     // Borders
     val divider: Color,
     val borderLight: Color,
+    val borderMint: Color,
     val dividerLightTeal: Color,
     // Status
     val colorDanger: Color,
@@ -59,6 +60,7 @@ internal val DarkColorScheme = RamadhanColorScheme(
     textOnLight = textOnLight,
     divider = divider,
     borderLight = borderLight,
+    borderMint = borderMint,
     dividerLightTeal = dividerLightTeal,
     colorDanger = colorDanger,
     colorSuccess = colorSuccess,
@@ -89,6 +91,7 @@ internal val LightColorScheme = RamadhanColorScheme(
     textOnLight = textOnLight,
     divider = borderLight,
     borderLight = borderLight,
+    borderMint = borderMint,
     dividerLightTeal = dividerLightTeal,
     colorDanger = colorDanger,
     colorSuccess = colorSuccess,

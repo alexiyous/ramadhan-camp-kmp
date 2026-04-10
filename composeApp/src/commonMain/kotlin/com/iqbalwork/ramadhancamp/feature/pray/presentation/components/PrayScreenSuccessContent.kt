@@ -1,47 +1,60 @@
 package com.iqbalwork.ramadhancamp.feature.pray.presentation.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.iqbalwork.ramadhancamp.feature.pray.domain.model.Prayers
 import com.iqbalwork.ramadhancamp.feature.pray.presentation.model.PrayCountdownUiModel
-import com.iqbalwork.ramadhancamp.feature.pray.presentation.model.PrayEvent
 import com.iqbalwork.ramadhancamp.feature.pray.presentation.model.PrayItemUiModel
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material3.Surface
-import androidx.compose.ui.tooling.preview.Preview
+import com.iqbalwork.ramadhancamp.shared.common.ui.components.dialog.RamadhanAlertDialog
 import com.iqbalwork.ramadhancamp.shared.common.ui.theme.RamadhanTheme
+import kotlinx.datetime.LocalDate
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PrayScreenSuccessContent(
     modifier: Modifier = Modifier,
+    showPermissionDialog: Boolean ,
     currentCity: String,
     currentCountry: String,
     selectedDate: String,
     countdown: PrayCountdownUiModel?,
     prayers: List<PrayItemUiModel>,
     onAlarmClicked: (key: Prayers, enabled: Boolean) -> Unit,
-    onCalendarClicked: () -> Unit,
+    onDateSelect: (date: LocalDate) -> Unit,
+    onPermissionCancel: () -> Unit,
+    onPermissionConfirm: () -> Unit
 ) {
+    var showDatePicker by rememberSaveable { mutableStateOf(false) }
+
     LazyColumn(
         modifier = modifier,
     ) {
         item {
             PrayHeader(
-                modifier = Modifier.fillMaxWidth().padding(bottom = 20.dp),
+                modifier = Modifier
+                    .statusBarsPadding()
+                    .fillMaxWidth()
+                    .padding(bottom = 20.dp),
                 city = currentCity,
                 selectedDate = selectedDate,
-                onCalendarClick = onCalendarClicked,
+                onCalendarClick = { showDatePicker = true },
                 country = currentCountry
             )
         }
@@ -62,15 +75,37 @@ fun PrayScreenSuccessContent(
             PrayerRowItem(
                 item = prayer,
                 onAlarmToggle = onAlarmClicked,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+                modifier = Modifier.padding(vertical = 6.dp)
             )
         }
     }
+
+    if (showDatePicker) {
+        PrayDatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            onDateSelect = { date ->
+                onDateSelect(date)
+                showDatePicker = false
+            }
+        )
+    }
+
+    if (showPermissionDialog)
+        RamadhanAlertDialog(
+            text = "Tolong aktifkan izin notifikasi untuk mendapatkan pengingat waktu sholat tepat waktu.",
+            title = "Aktifkan Izin Notifikasi",
+            confirmButtonText = "Pengaturan",
+            dismissButtonText = "Batal",
+            onDismiss = onPermissionCancel,
+            onConfirm = onPermissionConfirm
+        )
 }
 
 @Preview
 @Composable
 private fun PrayScreenSuccessContentPreview() {
+    val showPermissionDialog by rememberSaveable { mutableStateOf(false) }
+
     val dummyPrayers = listOf(
         PrayItemUiModel(Prayers.SUBUH, "Fajr", "04:30", Icons.Default.Notifications, isNextPrayer = false, isAlarmOn = true),
         PrayItemUiModel(Prayers.DZUHUR, "Dhuhr", "11:45", Icons.Default.Notifications, isNextPrayer = true, isAlarmOn = false),
@@ -99,8 +134,11 @@ private fun PrayScreenSuccessContentPreview() {
                 countdown = dummyCountdown,
                 prayers = dummyPrayers,
                 onAlarmClicked = { _, _ -> },
-                onCalendarClicked = {},
-                currentCountry = "Indonesia"
+                onDateSelect = {},
+                currentCountry = "Indonesia",
+                showPermissionDialog = showPermissionDialog,
+                onPermissionCancel = {},
+                onPermissionConfirm = {}
             )
         }
     }
@@ -109,6 +147,8 @@ private fun PrayScreenSuccessContentPreview() {
 @Preview
 @Composable
 private fun PrayScreenSuccessContentNoCountdownPreview() {
+    val showPermissionDialog by rememberSaveable { mutableStateOf(false) }
+
     val dummyPrayers = listOf(
         PrayItemUiModel(Prayers.SUBUH, "Fajr", "04:30", Icons.Default.Notifications, isNextPrayer = false, isAlarmOn = true),
         PrayItemUiModel(Prayers.DZUHUR, "Dhuhr", "11:45", Icons.Default.Notifications, isNextPrayer = false, isAlarmOn = false),
@@ -126,8 +166,11 @@ private fun PrayScreenSuccessContentNoCountdownPreview() {
                 countdown = null,
                 prayers = dummyPrayers,
                 onAlarmClicked = { _, _ -> },
-                onCalendarClicked = {},
-                currentCountry = "Indonesia"
+                onDateSelect = {},
+                currentCountry = "Indonesia",
+                showPermissionDialog = showPermissionDialog,
+                onPermissionCancel = {},
+                onPermissionConfirm = {}
             )
         }
     }

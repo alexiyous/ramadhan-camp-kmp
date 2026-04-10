@@ -7,9 +7,12 @@ import com.iqbalwork.ramadhancamp.feature.pray.domain.model.Prayers
 import com.iqbalwork.ramadhancamp.feature.pray.domain.model.toPrayerDisplayName
 import com.iqbalwork.ramadhancamp.shared.common.extension.padZero
 import com.iqbalwork.ramadhancamp.shared.common.extension.toSeconds
-import kotlinx.datetime.LocalDate
+
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.plus
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
 
@@ -28,13 +31,16 @@ fun ShalatJadwalDto.toPrayItems(
 ): List<PrayItem> {
     val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
     val nowSeconds = now.hour * 3600 + now.minute * 60 + now.second
-    val nextPrayerKey: Prayers? = if (selectedDate == today) {
-        Prayers.entries
-            .firstOrNull { key ->
-                val time = timeForKey(key) ?: return@firstOrNull false
-                time.toSeconds() > nowSeconds
-            }
-    } else null
+
+    val todayNextKey = Prayers.entries.firstOrNull { key ->
+        val time = timeForKey(key) ?: return@firstOrNull false
+        time.toSeconds() > nowSeconds
+    }
+
+    val expectedDate = if (todayNextKey == null) today.plus(1, DateTimeUnit.DAY) else today
+    val expectedKey = todayNextKey ?: Prayers.SUBUH
+
+    val nextPrayerKey: Prayers? = if (selectedDate == expectedDate) expectedKey else null
     return Prayers.entries.mapNotNull { key ->
         val time = timeForKey(key) ?: return@mapNotNull null
         PrayItem(
@@ -47,43 +53,42 @@ fun ShalatJadwalDto.toPrayItems(
     }
 }
 
-fun ShalatJadwalDto.toPrayCountdown(now: LocalDateTime): PrayCountdown {
-    val prayers = listOf(
-        "Fajr"    to subuh,
-        "Dhuhr"   to dzuhur,
-        "Asr"     to ashar,
-        "Maghrib" to maghrib,
-        "Isha"    to isya,
+fun ShalatJadwalDto.toPrayCountdown(now: LocalDateTime, tomorrowJadwal: ShalatJadwalDto? = null): PrayCountdown {
+    val nowSeconds = now.hour * 3600 + now.minute * 60 + now.second
+    val tom = tomorrowJadwal ?: this
+
+    data class Point(val name: String, val time: String, val sec: Long)
+    val timeline = listOf(
+        Point(Prayers.ISYA.toPrayerDisplayName(), isya, isya.toSeconds() - 86400L),
+        Point(Prayers.SUBUH.toPrayerDisplayName(), subuh, subuh.toSeconds().toLong()),
+        Point(Prayers.DZUHUR.toPrayerDisplayName(), dzuhur, dzuhur.toSeconds().toLong()),
+        Point(Prayers.ASHAR.toPrayerDisplayName(), ashar, ashar.toSeconds().toLong()),
+        Point(Prayers.MAGHRIB.toPrayerDisplayName(), maghrib, maghrib.toSeconds().toLong()),
+        Point(Prayers.ISYA.toPrayerDisplayName(), isya, isya.toSeconds().toLong()),
+        Point(Prayers.SUBUH.toPrayerDisplayName(), tom.subuh, tom.subuh.toSeconds() + 86400L),
+        Point(Prayers.DZUHUR.toPrayerDisplayName(), tom.dzuhur, tom.dzuhur.toSeconds() + 86400L),
+        Point(Prayers.ASHAR.toPrayerDisplayName(), tom.ashar, tom.ashar.toSeconds() + 86400L),
+        Point(Prayers.MAGHRIB.toPrayerDisplayName(), tom.maghrib, tom.maghrib.toSeconds() + 86400L),
+        Point(Prayers.ISYA.toPrayerDisplayName(), tom.isya, tom.isya.toSeconds() + 86400L),
     )
 
-    val nowSeconds = now.hour * 3600 + now.minute * 60 + now.second
+    val nextIdx = timeline.indexOfFirst { it.sec > nowSeconds }.takeIf { it > 0 } ?: 1
+    val prev = timeline[nextIdx - 1]
+    val next = timeline[nextIdx]
+    val afterNext = timeline[nextIdx + 1]
 
-    val nextIndex = prayers.indexOfFirst { (_, time) -> time.toSeconds() > nowSeconds }
-        .takeIf { it >= 0 } ?: 0
-
-    val next = prayers[nextIndex]
-    val prev = prayers[(nextIndex - 1 + prayers.size) % prayers.size]
-    val afterNext = prayers[(nextIndex + 1) % prayers.size]
-
-    val nextSeconds = next.second.toSeconds()
-    val remainingSeconds = if (nextSeconds > nowSeconds) {
-        (nextSeconds - nowSeconds).toLong()
-    } else {
-        (86400 - nowSeconds + nextSeconds).toLong()
-    }
-
-    val h = remainingSeconds / 3600
-    val m = (remainingSeconds % 3600) / 60
-    val s = remainingSeconds % 60
-    val remainingTime = "${h.padZero()}:${m.padZero()}:${s.padZero()}"
+    val remaining = next.sec - nowSeconds
+    val h = remaining / 3600
+    val m = (remaining % 3600) / 60
+    val s = remaining % 60
 
     return PrayCountdown(
-        prayerName = next.first,
-        prayerTime = next.second,
-        remainingTime = remainingTime,
-        prevPrayerName = prev.first,
-        prevPrayerTime = prev.second,
-        nextPrayerName = afterNext.first,
-        nextPrayerTime = afterNext.second,
+        prayerName = next.name,
+        prayerTime = next.time,
+        remainingTime = "${h.padZero()}:${m.padZero()}:${s.padZero()}",
+        prevPrayerName = prev.name,
+        prevPrayerTime = prev.time,
+        nextPrayerName = afterNext.name,
+        nextPrayerTime = afterNext.time,
     )
 }

@@ -5,9 +5,11 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -15,10 +17,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.NotificationsOff
+import androidx.compose.material.icons.outlined.NotificationsActive
+import androidx.compose.material.icons.outlined.NotificationsOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,6 +35,9 @@ import androidx.compose.ui.unit.dp
 import com.iqbalwork.ramadhancamp.feature.pray.domain.model.Prayers
 import com.iqbalwork.ramadhancamp.feature.pray.presentation.model.PrayItemUiModel
 import com.iqbalwork.ramadhancamp.shared.common.ui.theme.RamadhanTheme
+import org.jetbrains.compose.resources.stringResource
+import ramadhancamp.composeapp.generated.resources.Res
+import ramadhancamp.composeapp.generated.resources.next_uppercase
 
 @Composable
 fun PrayerRowItem(
@@ -39,9 +47,7 @@ fun PrayerRowItem(
 ) {
     val colors = RamadhanTheme.colors
     val typography = RamadhanTheme.typography
-
     val isHighlighted = item.isNextPrayer
-    val rowAlpha = 1f
 
     val containerColor = if (isHighlighted)
         colors.bgSurface.copy(alpha = 0.2f)
@@ -51,28 +57,28 @@ fun PrayerRowItem(
     val borderModifier = if (isHighlighted)
         Modifier.border(
             width = 2.dp,
-            color = colors.accentPrimary.copy(alpha = 0.3f),
+            color = colors.borderMint.copy(alpha = 0.3f),
             shape = RoundedCornerShape(12.dp)
         )
-    else Modifier
+    else Modifier.border(
+        width = 1.dp,
+        color = colors.textPrimary.copy(alpha = 0.05f),
+        shape = RoundedCornerShape(12.dp)
+    )
 
     Box(
         modifier = modifier
-            .alpha(rowAlpha)
+            .height(IntrinsicSize.Min)
             .clip(RoundedCornerShape(12.dp))
             .then(borderModifier)
             .background(containerColor)
     ) {
         if (isHighlighted) {
-            Box(
+            VerticalDivider(
                 modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .width(4.dp)
-                    .matchParentSize()
-                    .background(
-                        color = colors.accentPrimary,
-                        shape = RoundedCornerShape(topStart = 12.dp, bottomStart = 12.dp)
-                    )
+                    .fillMaxHeight(),
+                thickness = 4.dp,
+                color = colors.borderMint
             )
         }
 
@@ -95,19 +101,19 @@ fun PrayerRowItem(
                 Icon(
                     imageVector = item.icon,
                     contentDescription = item.displayName,
-                    tint = if (isHighlighted) colors.accentPrimary else colors.textSecondary,
+                    tint = if (isHighlighted) colors.borderMint else colors.textSecondary,
                     modifier = Modifier.size(22.dp)
                 )
                 Column {
                     Text(
                         text = item.displayName,
                         style = typography.bodyLarge,
-                        color = if (isHighlighted) colors.accentPrimary else colors.textPrimary,
+                        color = if (isHighlighted) colors.borderMint else colors.textPrimary,
                         fontWeight = if (isHighlighted) FontWeight.Bold else FontWeight.SemiBold
                     )
                     if (isHighlighted) {
                         Text(
-                            text = "NEXT PRAYER",
+                            text = stringResource(Res.string.next_uppercase),
                             style = typography.labelSmall,
                             color = colors.textMuted
                         )
@@ -130,11 +136,11 @@ fun PrayerRowItem(
                     ) {
                         Icon(
                             imageVector = if (item.isAlarmOn)
-                                Icons.Default.NotificationsActive
+                                Icons.Outlined.NotificationsActive
                             else
-                                Icons.Default.NotificationsOff,
+                                Icons.Outlined.NotificationsOff,
                             contentDescription = if (item.isAlarmOn) "Alarm on" else "Alarm off",
-                            tint = if (item.isAlarmOn) colors.accentPrimary else colors.textMuted,
+                            tint = if (item.isAlarmOn) colors.borderMint else colors.textMuted,
                             modifier = Modifier.size(20.dp)
                         )
                     }

@@ -15,9 +15,9 @@ enum class Prayers {
 }
 
 fun Prayers.toPrayerDisplayName(): String = when (this) {
-    SUBUH   -> "Fajr"
-    DZUHUR  -> "Dhuhr"
-    ASHAR   -> "Asr"
+    SUBUH   -> "Subuh"
+    DZUHUR  -> "Dzuhur"
+    ASHAR   -> "Ashar"
     MAGHRIB -> "Maghrib"
-    ISYA    -> "Isha"
+    ISYA    -> "Isya"
 }

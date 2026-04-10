@@ -12,6 +12,8 @@ import com.iqbalwork.ramadhancamp.shared.common.ui.BaseViewModel
 import com.iqbalwork.ramadhancamp.shared.common.utils.AppError
 import com.iqbalwork.ramadhancamp.shared.common.utils.date.DateFormatPattern
 import com.iqbalwork.ramadhancamp.shared.common.utils.date.format
+import com.iqbalwork.ramadhancamp.shared.common.utils.date.toLocalDate
+import com.iqbalwork.ramadhancamp.shared.common.utils.goToDeviceSettings
 import com.iqbalwork.ramadhancamp.shared.common.utils.toAppError
 import dev.icerock.moko.permissions.DeniedAlwaysException
 import dev.icerock.moko.permissions.DeniedException
@@ -57,13 +59,21 @@ class PrayViewModel(
     }
 
     private suspend fun initPraySchedule() {
-        prayRepository.lastCity
+        prayRepository.lastLocation
             .collect {
                 updateState { copy(isLoading = true) }
                 if (it == null) {
                     updateState { copy(isLoading = false, hasLocation = false) }
                     return@collect
                 }
+
+                updateState {
+                    copy(
+                        city = it.city,
+                        country = it.country
+                    )
+                }
+
                 loadTodaySchedule()
             }
     }
@@ -78,12 +88,13 @@ class PrayViewModel(
         when (event) {
             is PrayEvent.DateSelected -> viewModelScope.launch { loadScheduleForDate(event.date) }
             is PrayEvent.ToggleAlarm -> viewModelScope.launch { onToggleAlarm(event.prayerKey, event.enabled) }
-            PrayEvent.OpenDatePicker -> updateState { copy(isDatePickerVisible = true) }
-            PrayEvent.CloseDatePicker -> updateState { copy(isDatePickerVisible = false) }
             PrayEvent.RetryLoadSchedule -> viewModelScope.launch {
-                if (hasLoadTodaySchedule) loadScheduleForDate(LocalDateTime.parse(state.value.selectedDate).date)
+                if (hasLoadTodaySchedule) loadScheduleForDate(state.value.selectedDate.toLocalDate(
+                    formatPattern = DateFormatPattern.SHORT_DAY_DATE_MONTH_YEAR))
                 else loadTodaySchedule()
             }
+
+            PrayEvent.GoToSetting -> goToDeviceSettings()
         }
     }
 
@@ -112,7 +123,7 @@ class PrayViewModel(
                 isLoading = true,
                 error = null,
                 selectedDate = date.format(formatPattern = DateFormatPattern.SHORT_DAY_DATE_MONTH_YEAR),
-                isDatePickerVisible = false)
+               )
         }
         prayRepository.loadSchedule(date)
             .onSuccess { schedule ->
@@ -137,4 +148,4 @@ class PrayViewModel(
             }
     }
 }
-        
+

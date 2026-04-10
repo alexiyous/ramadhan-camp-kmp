@@ -9,10 +9,10 @@ import kotlin.time.Clock
 data class PrayState(
     val isLoading: Boolean = false,
     val city: String = "",
+    val country: String = "",
     val hasLocation: Boolean = false,
     val selectedDate: String = "",
     val countdown: PrayCountdownUiModel? = null,
     val prayers: List<PrayItemUiModel> = emptyList(),
-    val isDatePickerVisible: Boolean = false,
     val error: AppError? = null
 )
