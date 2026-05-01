@@ -1,52 +1,75 @@
 package com.iqbalwork.ramadhancamp.feature.qibla.presentation
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.iqbalwork.ramadhancamp.feature.bookmark.presentation.route.BookmarkTab
+import com.iqbalwork.ramadhancamp.feature.qibla.domain.repository.QiblaRepository
+import com.iqbalwork.ramadhancamp.feature.qibla.presentation.model.QiblaEffect
+import com.iqbalwork.ramadhancamp.feature.qibla.presentation.model.QiblaEvent
+import com.iqbalwork.ramadhancamp.feature.qibla.presentation.model.QiblaState
 import com.iqbalwork.ramadhancamp.shared.common.navigation.NavigationManager
-import com.iqbalwork.ramadhancamp.shared.common.navigation.DialogDestination
-import com.iqbalwork.ramadhancamp.shared.common.navigation.NavigationResult
-import com.iqbalwork.ramadhancamp.shared.common.navigation.TabDestination
-import com.iqbalwork.ramadhancamp.shared.common.navigation.TextResult
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import com.iqbalwork.ramadhancamp.shared.common.ui.BaseViewModel
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 class QiblaViewModel(
-    private val navController: NavigationManager,
-) : ViewModel() {
-
-    companion object { const val RESULT_KEY = "qibla_result" }
-
-    private val _lastResult = MutableStateFlow<String?>(null)
-    val lastResult: StateFlow<String?> = _lastResult.asStateFlow()
+    navController: NavigationManager,
+    params: QiblaScreenParameters,
+    private val qiblaRepository: QiblaRepository
+) : BaseViewModel<QiblaScreenParameters, QiblaState, QiblaEvent, QiblaEffect>(
+    params = params,
+    initialState = QiblaState(
+        isCompassAvailable = qiblaRepository.isCompassAvailable
+    ),
+    navigationManager = navController,
+    resultKeys = arrayOf(),
+) {
 
     init {
+        qiblaRepository.startCompass()
+        
+        qiblaRepository.compassHeading.onEach { heading ->
+            updateState { copy(currentHeading = heading) }
+        }.launchIn(viewModelScope)
+        
+        fetchQiblaLocation()
+    }
+    
+    private fun fetchQiblaLocation() {
+        updateState { copy(isLoading = true, hasLocationPermission = true) }
         viewModelScope.launch {
-            navController.subscribeToResult(RESULT_KEY).collect { result ->
-                _lastResult.value = when (result) {
-                    is NavigationResult.Success -> "✓ ${(result.value as? TextResult)?.text}"
-                    is NavigationResult.Cancel  -> "✗ Cancelled"
+            qiblaRepository.getQiblaLocation().fold(
+                onSuccess = { location ->
+                    updateState {
+                        copy(
+                            isLoading = false,
+                            cityName = location.cityName,
+                            bearingToKaaba = location.bearingToKaaba,
+                            distanceKm = location.distanceToKaabaKm
+                        )
+                    }
+                },
+                onFailure = {
+                    updateState { 
+                        copy(
+                            isLoading = false,
+                            hasLocationPermission = false 
+                        ) 
+                    }
                 }
+            )
+        }
+    }
+
+    override fun handleEvent(event: QiblaEvent) {
+        when (event) {
+            is QiblaEvent.RequestLocation -> {
+                fetchQiblaLocation()
             }
         }
     }
 
-    fun navigateToDetail()  = navController.navigateToInsideTab(TabDestination.QiblaDetail)
-    fun replaceWithDetail() = navController.navigateToInsideTab(TabDestination.QiblaDetail, withReplace = true)
-    fun switchToBookmark()  = navController.switchTab(BookmarkTab)
-    fun showQiblaSheet()    = navController.showDialog(DialogDestination.QiblaSheet)
-
-    fun navigateToSubDetail() = navController.navigateToInsideTab(TabDestination.QiblaSubDetail)
-    fun back()                = navController.back()
-    fun backWithResult()      = navController.back(
-        NavigationResult.Success(RESULT_KEY, TextResult("From QiblaDetail"))
-    )
-
-    fun backToMain() = navController.backToScreen(TabDestination.QiblaMain)
-    fun backToMainWithResult() = navController.backToScreen(
-        key = TabDestination.QiblaMain,
-        navigationResult = NavigationResult.Success(RESULT_KEY, TextResult("From QiblaSubDetail")),
-    )
+    override fun onCleared() {
+        qiblaRepository.stopCompass()
+        super.onCleared()
+    }
 }
