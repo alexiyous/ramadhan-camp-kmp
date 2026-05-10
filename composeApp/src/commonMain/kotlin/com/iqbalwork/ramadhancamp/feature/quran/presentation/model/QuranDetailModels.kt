@@ -4,10 +4,11 @@ import com.iqbalwork.ramadhancamp.feature.quran.domain.model.Ayat
 import com.iqbalwork.ramadhancamp.feature.quran.domain.model.SurahDetail
 import com.iqbalwork.ramadhancamp.shared.common.ui.UiEffect
 import com.iqbalwork.ramadhancamp.shared.common.ui.UiEvent
+import com.iqbalwork.ramadhancamp.shared.common.utils.AppError
 
 data class QuranDetailState(
     val isLoading: Boolean = true,
-    val isError: Boolean = false,
+    val appError: AppError? = null,
     val surahDetail: SurahDetail? = null,
     val selectedAyatForOptions: Ayat? = null,
     val playingAyat: Ayat? = null,
@@ -28,6 +29,7 @@ sealed interface QuranDetailEvent : UiEvent {
     data class OnShareClicked(val ayat: Ayat) : QuranDetailEvent
     data class OnCopyClicked(val ayat: Ayat) : QuranDetailEvent
     data class AudioError(val message: String) : QuranDetailEvent
+    data object Retry : QuranDetailEvent
 }
 
 sealed interface QuranDetailEffect : UiEffect

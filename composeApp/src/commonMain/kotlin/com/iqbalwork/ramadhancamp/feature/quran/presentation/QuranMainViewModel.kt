@@ -1,4 +1,4 @@
-package com.iqbalwork.ramadhancamp.feature.quran.presentation
+﻿package com.iqbalwork.ramadhancamp.feature.quran.presentation
 
 import androidx.lifecycle.viewModelScope
 import com.iqbalwork.ramadhancamp.feature.quran.domain.repository.QuranRepository
@@ -11,6 +11,7 @@ import com.iqbalwork.ramadhancamp.shared.common.navigation.NavigationResultData
 import com.iqbalwork.ramadhancamp.shared.common.navigation.LastSurahNavigationData
 import com.iqbalwork.ramadhancamp.shared.common.navigation.TabDestination
 import com.iqbalwork.ramadhancamp.shared.common.ui.BaseViewModel
+import com.iqbalwork.ramadhancamp.shared.common.utils.AppError
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -52,14 +53,14 @@ class QuranMainViewModel(
     }
 
     private fun loadSurahs() {
-        updateState { copy(isLoading = true, isError = false) }
+        updateState { copy(isLoading = true, appError = null) }
         viewModelScope.launch {
             quranRepository.getSurahs()
                 .onSuccess { surahs ->
                     updateState { copy(isLoading = false, surahs = surahs) }
                 }
                 .onFailure {
-                    updateState { copy(isLoading = false, isError = true) }
+                    updateState { copy(isLoading = false, appError = it as? AppError ?: AppError.UnexpectedError("Unknown error", it)) }
                 }
         }
     }
@@ -75,13 +76,13 @@ class QuranMainViewModel(
                         updateState { copy(searchResults = null, isLoading = false) }
                         loadSurahs()
                     } else {
-                        updateState { copy(isLoading = true, isError = false) }
+                        updateState { copy(isLoading = true, appError = null) }
                         quranRepository.search(event.query)
                             .onSuccess { results ->
                                 updateState { copy(isLoading = false, searchResults = results) }
                             }
                             .onFailure {
-                                updateState { copy(isLoading = false, isError = true) }
+                                updateState { copy(isLoading = false, appError = it as? AppError ?: AppError.UnexpectedError("Unknown error", it)) }
                             }
                     }
                 }
@@ -104,7 +105,13 @@ class QuranMainViewModel(
             is QuranMainEvent.FocusSearchConsumed -> {
                 updateState { copy(focusSearch = false) }
             }
+            is QuranMainEvent.Retry -> {
+                if (state.value.searchQuery.isNotBlank()) {
+                    handleEvent(QuranMainEvent.Search(state.value.searchQuery))
+                } else {
+                    loadSurahs()
+                }
+            }
         }
     }
 }
-

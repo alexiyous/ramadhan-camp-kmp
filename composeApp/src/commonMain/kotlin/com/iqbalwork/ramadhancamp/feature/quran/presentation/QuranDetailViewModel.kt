@@ -1,4 +1,4 @@
-﻿package com.iqbalwork.ramadhancamp.feature.quran.presentation
+package com.iqbalwork.ramadhancamp.feature.quran.presentation
 
 import androidx.lifecycle.viewModelScope
 import chaintech.videoplayer.host.MediaPlayerHost
@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 import com.iqbalwork.ramadhancamp.shared.common.ui.components.snackbar.RamadhanSnackBarProps
 import com.iqbalwork.ramadhancamp.shared.common.ui.components.snackbar.SnackBarData
 import com.iqbalwork.ramadhancamp.shared.common.ui.utils.TextResource
+import com.iqbalwork.ramadhancamp.shared.common.utils.AppError
 import ramadhancamp.composeapp.generated.resources.Res
 import ramadhancamp.composeapp.generated.resources.image_danger_error
 
@@ -36,7 +37,7 @@ class QuranDetailViewModel(
 
     // Persisted playback position (survives tab switches)
     var persistSmoothProgressMs: Long = 0L
-    var persistCurrentTimeMs: Long = 0L
+    var persistCurrentTime: Float = 0F
     var persistTotalTimeMs: Long = 0L
 
     init {
@@ -44,14 +45,14 @@ class QuranDetailViewModel(
     }
 
     private fun loadSurahDetail() {
-        updateState { copy(isLoading = true, isError = false) }
+        updateState { copy(isLoading = true, appError = null) }
         viewModelScope.launch {
             quranRepository.getSurahDetail(params.surahId)
                 .onSuccess { detail ->
                     updateState { copy(isLoading = false, surahDetail = detail) }
                 }
                 .onFailure {
-                    updateState { copy(isLoading = false, isError = true) }
+                    updateState { copy(isLoading = false, appError = it as? AppError ?: AppError.UnexpectedError("Unknown error", it)) }
                 }
         }
     }
@@ -155,6 +156,9 @@ class QuranDetailViewModel(
                         position = RamadhanSnackBarProps.Position.Bottom
                     )
                 )
+            }
+            is QuranDetailEvent.Retry -> {
+                loadSurahDetail()
             }
         }
     }

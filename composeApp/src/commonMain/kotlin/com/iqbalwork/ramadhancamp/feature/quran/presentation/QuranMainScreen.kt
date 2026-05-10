@@ -1,5 +1,6 @@
 ﻿package com.iqbalwork.ramadhancamp.feature.quran.presentation
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -24,9 +25,18 @@ import com.iqbalwork.ramadhancamp.feature.quran.presentation.components.SurahLis
 import com.iqbalwork.ramadhancamp.feature.quran.presentation.model.QuranMainEvent
 import com.iqbalwork.ramadhancamp.feature.quran.presentation.model.QuranMainState
 import com.iqbalwork.ramadhancamp.shared.common.extension.rememberViewModel
+import com.iqbalwork.ramadhancamp.shared.common.ui.components.error.ErrorEmptyState
+import com.iqbalwork.ramadhancamp.shared.common.ui.components.error.RamadhanErrorEmptyState
+import com.iqbalwork.ramadhancamp.shared.common.ui.components.error.toErrorEmptyState
 import com.iqbalwork.ramadhancamp.shared.common.ui.components.loading.Loader
 import com.iqbalwork.ramadhancamp.shared.common.ui.rememberDispatch
 import com.iqbalwork.ramadhancamp.shared.common.ui.theme.RamadhanTheme
+
+private sealed interface AnimateContentState {
+    data object Loading : AnimateContentState
+    class Error(val error: ErrorEmptyState) : AnimateContentState
+    data object Success : AnimateContentState
+}
 
 @Composable
 fun QuranMainScreen() {
@@ -78,39 +88,49 @@ private fun QuranMainContent(
                 )
             }
 
-            if (state.isLoading) {
-                Loader(modifier = Modifier.fillMaxSize())
-            } else if (state.isError) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
-                    Text(
-                        text = "Gagal memuat data",
-                        style = RamadhanTheme.typography.bodyLarge,
-                        color = RamadhanTheme.colors.textMuted
-                    )
-                }
-            } else {
-                LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    if (state.searchResults != null) {
-                        items(state.searchResults!!, key = { it.itemKey }) { result ->
-                            when (result) {
-                                is SurahSearchResult -> SurahListItem(
-                                    surah = result.surah,
-                                    onClick = { action(QuranMainEvent.SurahClicked(result.surah.number)) }
-                                )
-                                is AyatSearchResult -> AyatSearchResultItem(
-                                    result = result,
-                                    onClick = { action(QuranMainEvent.AyatClicked(result.surahNumber, result.ayat.nomorAyat)) }
-                                )
+            AnimatedContent(
+                modifier = Modifier.fillMaxSize(),
+                targetState = when {
+                    state.isLoading && state.surahs.isEmpty() && state.searchResults == null -> AnimateContentState.Loading // Initial loading
+                    state.appError != null -> AnimateContentState.Error(state.appError.toErrorEmptyState())
+                    else -> AnimateContentState.Success
+                },
+                label = "QuranMainContent"
+            ) { targetState ->
+                when (targetState) {
+                    is AnimateContentState.Loading -> Loader(modifier = Modifier.fillMaxSize())
+                    is AnimateContentState.Error -> {
+                        RamadhanErrorEmptyState(
+                            modifier = Modifier.fillMaxSize(),
+                            errorEmptyState = targetState.error,
+                            onButtonClick = { action(QuranMainEvent.Retry) }
+                        )
+                    }
+                    is AnimateContentState.Success -> {
+                        LazyColumn(modifier = Modifier.fillMaxSize()) {
+                            if (state.searchResults != null) {
+                                items(state.searchResults!!, key = { it.itemKey }) { result ->
+                                    when (result) {
+                                        is SurahSearchResult -> SurahListItem(
+                                            surah = result.surah,
+                                            onClick = { action(QuranMainEvent.SurahClicked(result.surah.number)) }
+                                        )
+                                        is AyatSearchResult -> AyatSearchResultItem(
+                                            result = result,
+                                            onClick = { action(QuranMainEvent.AyatClicked(result.surahNumber, result.ayat.nomorAyat)) }
+                                        )
+                                    }
+                                    HorizontalDivider(color = RamadhanTheme.colors.divider, thickness = 1.dp)
+                                }
+                            } else {
+                                items(state.surahs, key = { it.number }) { surah ->
+                                    SurahListItem(
+                                        surah = surah,
+                                        onClick = { action(QuranMainEvent.SurahClicked(surah.number)) }
+                                    )
+                                    HorizontalDivider(color = RamadhanTheme.colors.divider, thickness = 1.dp)
+                                }
                             }
-                            HorizontalDivider(color = RamadhanTheme.colors.divider, thickness = 1.dp)
-                        }
-                    } else {
-                        items(state.surahs, key = { it.number }) { surah ->
-                            SurahListItem(
-                                surah = surah,
-                                onClick = { action(QuranMainEvent.SurahClicked(surah.number)) }
-                            )
-                            HorizontalDivider(color = RamadhanTheme.colors.divider, thickness = 1.dp)
                         }
                     }
                 }
@@ -118,3 +138,4 @@ private fun QuranMainContent(
         }
     }
 }
+

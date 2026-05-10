@@ -1,4 +1,4 @@
-package com.iqbalwork.ramadhancamp.feature.quran.presentation
+﻿package com.iqbalwork.ramadhancamp.feature.quran.presentation
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -12,7 +12,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.iqbalwork.ramadhancamp.feature.quran.domain.model.Ayat
 import com.iqbalwork.ramadhancamp.feature.quran.presentation.components.AudioPlayerBar
 import com.iqbalwork.ramadhancamp.feature.quran.presentation.components.AyatCard
 import com.iqbalwork.ramadhancamp.feature.quran.presentation.components.AyatOptionsSheet
@@ -22,7 +21,6 @@ import com.iqbalwork.ramadhancamp.shared.common.extension.rememberViewModel
 import com.iqbalwork.ramadhancamp.shared.common.ui.rememberDispatch
 import com.iqbalwork.ramadhancamp.shared.common.ui.theme.RamadhanTheme
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.yield
 import kotlin.time.Clock
 import org.koin.core.parameter.parametersOf
 import chaintech.videoplayer.host.MediaPlayerHost
@@ -30,6 +28,18 @@ import chaintech.videoplayer.ui.audio.AudioPlayer
 import chaintech.videoplayer.host.MediaPlayerEvent
 import com.iqbalwork.ramadhancamp.shared.common.ui.components.loading.Loader
 import com.iqbalwork.ramadhancamp.shared.common.ui.components.snackbar.RamadhanSnackBarHost
+import androidx.compose.animation.AnimatedContent
+import com.iqbalwork.ramadhancamp.shared.common.ui.components.error.RamadhanErrorEmptyState
+import com.iqbalwork.ramadhancamp.shared.common.ui.components.error.toErrorEmptyState
+import com.iqbalwork.ramadhancamp.shared.common.ui.components.error.ErrorEmptyState
+import io.github.aakira.napier.log
+
+
+private sealed interface QuranDetailAnimState {
+    data object Loading : QuranDetailAnimState
+    class Error(val error: ErrorEmptyState) : QuranDetailAnimState
+    data object Success : QuranDetailAnimState
+}
 
 @Composable
 fun QuranDetailScreen(params: QuranDetailScreenParameters) {
@@ -54,10 +64,11 @@ fun QuranDetailContent(state: QuranDetailState, action: (QuranDetailEvent) -> Un
     val listState = rememberLazyListState()
 
     var isPlaying by remember { mutableStateOf(false) }
-    var currentTimeMs by remember { mutableStateOf(viewModel.persistCurrentTimeMs.toFloat()) }
     var totalTimeMs by remember { mutableStateOf(viewModel.persistTotalTimeMs.toFloat()) }
 
-    var smoothProgressMs by remember { mutableFloatStateOf(viewModel.persistSmoothProgressMs.toFloat()) }
+    var currentTime by remember { mutableFloatStateOf(0F) }
+
+    var smoothProgressMs by remember { mutableFloatStateOf(viewModel.persistCurrentTime * 1000f) }
     var isBuffering by remember { mutableStateOf(false) }
     var shouldRestorePosition by remember { mutableStateOf(false) }
     var pendingSeek by remember { mutableStateOf<Float?>(null) }
@@ -73,18 +84,24 @@ fun QuranDetailContent(state: QuranDetailState, action: (QuranDetailEvent) -> Un
         mediaPlayerHost.onEvent = { event ->
             when (event) {
                 is MediaPlayerEvent.PauseChange -> {
+                    log(tag = "MEDIA") { "is playing ${!event.isPaused}" }
                     isPlaying = !event.isPaused
                 }
                 is MediaPlayerEvent.CurrentTimeChange -> {
-                    currentTimeMs = event.currentTime * 1000f  // Convert seconds to milliseconds
-                    viewModel.persistCurrentTimeMs = (event.currentTime * 1000f).toLong()
+                    log(tag = "MEDIA") { "PERSISTANT ${(event.currentTime * 1000f).toLong()}" }
+                    currentTime = event.currentTime
+                    // Sync the smooth progress if it drifts too far from the real time
+                    val realMs = event.currentTime * 1000f
+                    if (kotlin.math.abs(smoothProgressMs - realMs) > 1500f) {
+                        smoothProgressMs = realMs
+                    }
                 }
                 is MediaPlayerEvent.TotalTimeChange -> {
                     totalTimeMs = event.totalTime * 1000f
                     viewModel.persistTotalTimeMs = (event.totalTime * 1000f).toLong()
                     if (shouldRestorePosition && event.totalTime > 0f) {
                         shouldRestorePosition = false
-                        pendingSeek = viewModel.persistCurrentTimeMs / 1000f
+                        pendingSeek = viewModel.persistCurrentTime
                     }
                 }
                 is MediaPlayerEvent.BufferChange -> {
@@ -102,15 +119,6 @@ fun QuranDetailContent(state: QuranDetailState, action: (QuranDetailEvent) -> Un
         }
     }
 
-    // Consume pending seek asynchronously -- runs AFTER the onEvents callback chain completes
-    LaunchedEffect(pendingSeek) {
-        pendingSeek?.let { seconds ->
-            kotlinx.coroutines.yield()
-            mediaPlayerHost.seekTo(seconds)
-            pendingSeek = null
-        }
-    }
-
     // SECOND: Load audio only after onEvent is set
     LaunchedEffect(state.playingAyat) {
         if (state.playingAyat != null) {
@@ -118,42 +126,42 @@ fun QuranDetailContent(state: QuranDetailState, action: (QuranDetailEvent) -> Un
             // restore position without auto-playing
             if (state.playingAyat.audioUrl == viewModel.lastLoadedAudioUrl) {
                 // Tab return -- AudioPlayer re-composes with same url, creates new native player
-                smoothProgressMs = viewModel.persistSmoothProgressMs.toFloat()
-                currentTimeMs = viewModel.persistCurrentTimeMs.toFloat()
+                smoothProgressMs = viewModel.persistCurrentTime * 1000f
                 totalTimeMs = viewModel.persistTotalTimeMs.toFloat()
 
                 mediaPlayerHost.pause()
                 shouldRestorePosition = true
+
+                log(tag = "MEDIA") { "Same Url" }
                 // AudioPlayer re-enters composition -> CMPAudioPlayer creates new native player
                 // -> TotalTimeChange fires -> pendingSeek triggers seekTo(savedPosition)
                 // DON'T call play() -- user should press play manually to resume
             } else {
+
                 // New ayat - fresh load
                 smoothProgressMs = 0f
-                currentTimeMs = 0f
                 totalTimeMs = 0f
-
+/*
                 mediaPlayerHost.pause()
-                yield()
+                yield()*/
                 mediaPlayerHost.loadUrl(state.playingAyat.audioUrl)
                 viewModel.lastLoadedAudioUrl = state.playingAyat.audioUrl
-                mediaPlayerHost.seekTo(0f)
                 delay(100)
                 mediaPlayerHost.play()
             }
         } else {
-            mediaPlayerHost.pause()
+           /* mediaPlayerHost.pause()*/
         }
     }
 
     // Pre-load next ayat audio to warm the network cache (no host swap)
-    LaunchedEffect(state.nextAyatAudioUrl) {
+    /*LaunchedEffect(state.nextAyatAudioUrl) {
         val nextUrl = state.nextAyatAudioUrl
         if (nextUrl != null) {
             preBufferHost.loadUrl(nextUrl)
             preBufferHost.pause()
         }
-    }
+    }*/
     // Scroll to specific ayat when navigated from search results
     val scrollTarget = scrollToAyat
     LaunchedEffect(scrollTarget, state.surahDetail) {
@@ -187,7 +195,7 @@ fun QuranDetailContent(state: QuranDetailState, action: (QuranDetailEvent) -> Un
 
     DisposableEffect(mediaPlayerHost) {
         onDispose {
-            viewModel.persistSmoothProgressMs = smoothProgressMs.toLong()
+            viewModel.persistCurrentTime = currentTime
             mediaPlayerHost.pause()
         }
     }
@@ -224,18 +232,24 @@ fun QuranDetailContent(state: QuranDetailState, action: (QuranDetailEvent) -> Un
         },
         containerColor = colors.bgPrimary
     ) { innerPadding ->
-        if (state.isLoading) {
-            Loader(modifier = Modifier.fillMaxSize())
-        } else if (state.isError) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(
-                    text = "Gagal memuat surah",
-                    style = typography.bodyLarge,
-                    color = colors.textPrimary
-                )
+        AnimatedContent(
+            modifier = Modifier.fillMaxSize().padding(innerPadding),
+            targetState = when {
+                state.isLoading && state.surahDetail == null -> QuranDetailAnimState.Loading
+                state.appError != null -> QuranDetailAnimState.Error(state.appError!!.toErrorEmptyState())
+                else -> QuranDetailAnimState.Success
             }
-        } else {
-            Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+        ) { targetState ->
+            when (targetState) {
+                is QuranDetailAnimState.Loading -> Loader(modifier = Modifier.fillMaxSize())
+                is QuranDetailAnimState.Error -> {
+                    RamadhanErrorEmptyState(
+                        modifier = Modifier.fillMaxSize(),
+                        errorEmptyState = targetState.error,
+                        onButtonClick = { action(QuranDetailEvent.Retry) }
+                    )
+                }
+                is QuranDetailAnimState.Success -> Box(modifier = Modifier.fillMaxSize()) {
                 LazyColumn(
                     state = listState,
                     modifier = Modifier.fillMaxSize(),
@@ -277,6 +291,11 @@ fun QuranDetailContent(state: QuranDetailState, action: (QuranDetailEvent) -> Un
                             if (isPlaying) {
                                 mediaPlayerHost.pause()
                             } else {
+                                pendingSeek?.let { seconds ->
+                                    log(tag = "MEDIA") { "Seek to $seconds" }
+                                    mediaPlayerHost.seekTo(seconds)
+                                    pendingSeek = null
+                                }
                                 mediaPlayerHost.play()
                             }
                         },
@@ -284,6 +303,7 @@ fun QuranDetailContent(state: QuranDetailState, action: (QuranDetailEvent) -> Un
                         onPrev = { action(QuranDetailEvent.PlayPrevAyat) },
                         modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 16.dp)
                     )
+                }
                 }
             }
         }
