@@ -1,4 +1,4 @@
-﻿package com.iqbalwork.ramadhancamp.feature.bookmark.presentation
+package com.iqbalwork.ramadhancamp.feature.bookmark.presentation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -30,11 +30,11 @@ import com.iqbalwork.ramadhancamp.feature.bookmark.presentation.model.BookmarkSt
 import com.iqbalwork.ramadhancamp.shared.common.ui.ScreenContent
 import com.iqbalwork.ramadhancamp.shared.common.ui.rememberDispatch
 import com.iqbalwork.ramadhancamp.shared.common.ui.theme.RamadhanTheme
-import org.koin.compose.viewmodel.koinViewModel
+import com.iqbalwork.ramadhancamp.shared.common.extension.rememberViewModel
 
 @Composable
 fun BookmarkScreen() {
-    val viewModel: BookmarkViewModel = koinViewModel()
+    val viewModel: BookmarkViewModel = rememberViewModel()
     val state by viewModel.state.collectAsStateWithLifecycle()
     val dispatch = viewModel.rememberDispatch()
 

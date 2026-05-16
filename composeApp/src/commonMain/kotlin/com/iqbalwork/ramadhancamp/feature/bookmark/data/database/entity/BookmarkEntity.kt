@@ -1,9 +1,10 @@
-﻿package com.iqbalwork.ramadhancamp.feature.bookmark.data.database.entity
+package com.iqbalwork.ramadhancamp.feature.bookmark.data.database.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.ForeignKey
 import androidx.room.ColumnInfo
+import androidx.room.Index
 
 @Entity(
     tableName = "bookmark",
@@ -14,7 +15,8 @@ import androidx.room.ColumnInfo
             childColumns = ["category_id"],
             onDelete = ForeignKey.CASCADE
         )
-    ]
+    ],
+    indices = [Index(value = ["category_id"])]
 )
 data class BookmarkEntity(
     @PrimaryKey(autoGenerate = true)
