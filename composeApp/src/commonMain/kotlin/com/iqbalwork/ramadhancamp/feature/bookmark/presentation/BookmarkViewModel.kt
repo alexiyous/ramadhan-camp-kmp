@@ -5,11 +5,19 @@ import com.iqbalwork.ramadhancamp.feature.bookmark.domain.repository.BookmarkRep
 import com.iqbalwork.ramadhancamp.feature.bookmark.presentation.model.BookmarkEffect
 import com.iqbalwork.ramadhancamp.feature.bookmark.presentation.model.BookmarkEvent
 import com.iqbalwork.ramadhancamp.feature.bookmark.presentation.model.BookmarkState
-import com.iqbalwork.ramadhancamp.shared.common.navigation.AppNavigationController
+import com.iqbalwork.ramadhancamp.feature.home.presentation.route.HomeTab
+import com.iqbalwork.ramadhancamp.shared.common.navigation.DialogDestination
+import com.iqbalwork.ramadhancamp.shared.common.navigation.NavigationManager
+import com.iqbalwork.ramadhancamp.shared.common.navigation.NavigationResult
+import com.iqbalwork.ramadhancamp.shared.common.navigation.NavigationResultData
+import com.iqbalwork.ramadhancamp.shared.common.navigation.TabDestination
+import com.iqbalwork.ramadhancamp.shared.common.navigation.TextResult
 import com.iqbalwork.ramadhancamp.shared.common.ui.BaseViewModel
-import com.iqbalwork.ramadhancamp.shared.common.ui.UiParams
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
@@ -18,20 +26,29 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 
-@OptIn(FlowPreview::class)
+@OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 class BookmarkViewModel(
-    navController: AppNavigationController,
+    navigationManager: NavigationManager,
     private val bookmarkRepository: BookmarkRepository
-) : BaseViewModel<UiParams.None, BookmarkState, BookmarkEvent, BookmarkEffect>(
-    params = UiParams.None,
-    initialState = BookmarkState(),
-    navigationManager = navController
+) : BaseViewModel<Unit, BookmarkState, BookmarkEvent, BookmarkEffect>(
+    Unit, BookmarkState(), navigationManager,
+    resultKeys = arrayOf("bookmark_result")
 ) {
     private val searchQueryFlow = MutableStateFlow("")
+
+    private val _lastResult = MutableStateFlow<String?>(null)
+    val lastResult: StateFlow<String?> = _lastResult.asStateFlow()
 
     init {
         loadCategories()
         observeBookmarks()
+    }
+
+    override fun navigationResultSuccess(key: String, data: NavigationResultData?) {
+        super.navigationResultSuccess(key, data)
+        if (key == "bookmark_result") {
+            _lastResult.value = (data as? TextResult)?.text
+        }
     }
 
     private fun loadCategories() {
@@ -69,7 +86,6 @@ class BookmarkViewModel(
             }
             is BookmarkEvent.OnCategorySelected -> {
                 updateState { copy(selectedCategoryId = event.categoryId) }
-                // Trigger re-filtering by re-emitting the search query
                 searchQueryFlow.value = state.value.searchQuery
             }
             is BookmarkEvent.OnAddBookmarkClick -> {
@@ -82,5 +98,41 @@ class BookmarkViewModel(
                 // Handle play click
             }
         }
+    }
+
+    fun navigateToDetail() {
+        navigationManager.navigateToInsideTab(TabDestination.BookmarkDetail)
+    }
+
+    fun replaceWithDetail() {
+        navigationManager.navigateToInsideTab(TabDestination.BookmarkDetail, withReplace = true)
+    }
+
+    fun switchToHome() {
+        navigationManager.switchTab(HomeTab)
+    }
+
+    fun showBookmarkSheet() {
+        navigationManager.showDialog(DialogDestination.BookmarkSheet)
+    }
+
+    fun navigateToSubDetail() {
+        navigationManager.navigateToInsideTab(TabDestination.BookmarkSubDetail)
+    }
+
+    fun back() {
+        navigationManager.back()
+    }
+
+    fun backWithResult() {
+        navigationManager.back(NavigationResult.Success("bookmark_result", TextResult("Hello from Detail!")))
+    }
+
+    fun backToMain() {
+        navigationManager.backToScreen(TabDestination.BookmarkMain)
+    }
+
+    fun backToMainWithResult() {
+        navigationManager.backToScreen(TabDestination.BookmarkMain, NavigationResult.Success("bookmark_result", TextResult("Hello from SubDetail!")))
     }
 }

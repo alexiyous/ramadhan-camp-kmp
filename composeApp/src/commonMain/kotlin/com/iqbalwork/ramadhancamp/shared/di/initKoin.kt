@@ -26,10 +26,10 @@ fun initKoin(config: KoinAppDeclaration? = null) {
             homeModule,
             prayModule,
             quranModule,
-        bookmarkModule,
-            qiblaModule,
             bookmarkModule,
+            qiblaModule,
             notifModule,
         )
     }
 }
+
