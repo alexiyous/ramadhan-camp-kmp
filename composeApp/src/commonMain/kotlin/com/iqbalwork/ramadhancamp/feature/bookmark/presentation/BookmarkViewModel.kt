@@ -1,52 +1,86 @@
 package com.iqbalwork.ramadhancamp.feature.bookmark.presentation
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.iqbalwork.ramadhancamp.feature.home.presentation.route.HomeTab
-import com.iqbalwork.ramadhancamp.shared.common.navigation.NavigationManager
-import com.iqbalwork.ramadhancamp.shared.common.navigation.DialogDestination
-import com.iqbalwork.ramadhancamp.shared.common.navigation.NavigationResult
-import com.iqbalwork.ramadhancamp.shared.common.navigation.TabDestination
-import com.iqbalwork.ramadhancamp.shared.common.navigation.TextResult
+import com.iqbalwork.ramadhancamp.feature.bookmark.domain.repository.BookmarkRepository
+import com.iqbalwork.ramadhancamp.feature.bookmark.presentation.model.BookmarkEffect
+import com.iqbalwork.ramadhancamp.feature.bookmark.presentation.model.BookmarkEvent
+import com.iqbalwork.ramadhancamp.feature.bookmark.presentation.model.BookmarkState
+import com.iqbalwork.ramadhancamp.shared.common.navigation.AppNavigationController
+import com.iqbalwork.ramadhancamp.shared.common.ui.BaseViewModel
+import com.iqbalwork.ramadhancamp.shared.common.ui.UiParams
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 
+@OptIn(FlowPreview::class)
 class BookmarkViewModel(
-    private val navController: NavigationManager,
-) : ViewModel() {
-
-    companion object { const val RESULT_KEY = "bookmark_result" }
-
-    private val _lastResult = MutableStateFlow<String?>(null)
-    val lastResult: StateFlow<String?> = _lastResult.asStateFlow()
+    navController: AppNavigationController,
+    private val bookmarkRepository: BookmarkRepository
+) : BaseViewModel<UiParams.None, BookmarkState, BookmarkEvent, BookmarkEffect>(
+    params = UiParams.None,
+    initialState = BookmarkState(),
+    navigationManager = navController
+) {
+    private val searchQueryFlow = MutableStateFlow("")
 
     init {
-        viewModelScope.launch {
-            navController.subscribeToResult(RESULT_KEY).collect { result ->
-                _lastResult.value = when (result) {
-                    is NavigationResult.Success -> "✓ ${(result.value as? TextResult)?.text}"
-                    is NavigationResult.Cancel  -> "✗ Cancelled"
+        loadCategories()
+        observeBookmarks()
+    }
+
+    private fun loadCategories() {
+        bookmarkRepository.getAllCategories()
+            .onEach { categories ->
+                updateState { copy(categories = categories) }
+            }
+            .launchIn(viewModelScope)
+    }
+
+    private fun observeBookmarks() {
+        searchQueryFlow
+            .debounce(300)
+            .distinctUntilChanged()
+            .flatMapLatest { query ->
+                bookmarkRepository.searchBookmarks(query)
+            }
+            .onEach { allBookmarks ->
+                val selectedCategoryId = state.value.selectedCategoryId
+                val filtered = if (selectedCategoryId != null) {
+                    allBookmarks.filter { it.categoryId == selectedCategoryId }
+                } else {
+                    allBookmarks
                 }
+                updateState { copy(bookmarks = filtered) }
+            }
+            .launchIn(viewModelScope)
+    }
+
+    override fun handleEvent(event: BookmarkEvent) {
+        when (event) {
+            is BookmarkEvent.OnSearchQueryChanged -> {
+                updateState { copy(searchQuery = event.query) }
+                searchQueryFlow.value = event.query
+            }
+            is BookmarkEvent.OnCategorySelected -> {
+                updateState { copy(selectedCategoryId = event.categoryId) }
+                // Trigger re-filtering by re-emitting the search query
+                searchQueryFlow.value = state.value.searchQuery
+            }
+            is BookmarkEvent.OnAddBookmarkClick -> {
+                // Handle add
+            }
+            is BookmarkEvent.OnBookmarkClick -> {
+                // Handle bookmark click
+            }
+            is BookmarkEvent.OnPlayClick -> {
+                // Handle play click
             }
         }
     }
-
-    fun navigateToDetail()  = navController.navigateToInsideTab(TabDestination.BookmarkDetail)
-    fun replaceWithDetail() = navController.navigateToInsideTab(TabDestination.BookmarkDetail, withReplace = true)
-    fun switchToHome()      = navController.switchTab(HomeTab)
-    fun showBookmarkSheet() = navController.showDialog(DialogDestination.BookmarkSheet)
-
-    fun navigateToSubDetail() = navController.navigateToInsideTab(TabDestination.BookmarkSubDetail)
-    fun back()                = navController.back()
-    fun backWithResult()      = navController.back(
-        NavigationResult.Success(RESULT_KEY, TextResult("From BookmarkDetail"))
-    )
-
-    fun backToMain() = navController.backToScreen(TabDestination.BookmarkMain)
-    fun backToMainWithResult() = navController.backToScreen(
-        key = TabDestination.BookmarkMain,
-        navigationResult = NavigationResult.Success(RESULT_KEY, TextResult("From BookmarkSubDetail")),
-    )
 }

@@ -1,4 +1,4 @@
-import org.gradle.kotlin.dsl.commonMain
+﻿import org.gradle.kotlin.dsl.commonMain
 import org.gradle.kotlin.dsl.get
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -9,6 +9,12 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.composeHotReload)
     alias(libs.plugins.kotlinx.serialization)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.androidx.room)
+}
+
+room {
+    schemaDirectory("$projectDir/schemas")
 }
 
 kotlin {
@@ -107,6 +113,10 @@ kotlin {
             implementation(libs.permissions.compose)
             implementation(libs.cmp.media.player)
 
+            // room
+            implementation(libs.androidx.room.runtime)
+            implementation(libs.androidx.sqlite.bundled)
+
         }
         commonTest.dependencies {
             api(libs.kotlin.test)
@@ -119,4 +129,13 @@ kotlin {
             implementation(libs.ktor.client.darwin)
         }
     }
+}
+
+dependencies {
+    // KSP for Android target
+    add("kspAndroid", libs.androidx.room.compiler)
+
+    // KSP for iOS targets
+    add("kspIosArm64", libs.androidx.room.compiler)
+    add("kspIosSimulatorArm64", libs.androidx.room.compiler)
 }

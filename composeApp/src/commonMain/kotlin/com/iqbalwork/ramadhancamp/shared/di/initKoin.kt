@@ -1,4 +1,4 @@
-package com.iqbalwork.ramadhancamp.shared.di
+﻿package com.iqbalwork.ramadhancamp.shared.di
 import com.iqbalwork.ramadhancamp.feature.bookmark.di.bookmarkModule
 import com.iqbalwork.ramadhancamp.feature.home.di.homeModule
 import com.iqbalwork.ramadhancamp.feature.pray.di.prayModule
@@ -26,6 +26,7 @@ fun initKoin(config: KoinAppDeclaration? = null) {
             homeModule,
             prayModule,
             quranModule,
+        bookmarkModule,
             qiblaModule,
             bookmarkModule,
             notifModule,
