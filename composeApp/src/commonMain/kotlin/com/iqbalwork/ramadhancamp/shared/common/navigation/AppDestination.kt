@@ -1,10 +1,11 @@
-﻿package com.iqbalwork.ramadhancamp.shared.common.navigation
+package com.iqbalwork.ramadhancamp.shared.common.navigation
 
 import androidx.navigation3.runtime.NavKey
 import androidx.savedstate.serialization.SavedStateConfiguration
 import com.iqbalwork.ramadhancamp.feature.home.presentation.HomeMainScreenParameters
 import com.iqbalwork.ramadhancamp.feature.pray.presentation.PrayMainScreenParameters
 import com.iqbalwork.ramadhancamp.feature.quran.presentation.QuranDetailScreenParameters
+import com.iqbalwork.ramadhancamp.feature.quran.presentation.QuranSheetScreenParameters
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.modules.SerializersModule
@@ -38,7 +39,7 @@ sealed interface TabDestination : NavKey {
 
 @Serializable
 sealed interface DialogDestination : NavKey {
-    @Serializable data object QuranSheet    : DialogDestination
+    @Serializable data class QuranSheet(val param: QuranSheetScreenParameters) : DialogDestination
     @Serializable data object BookmarkSheet : DialogDestination
 }
 

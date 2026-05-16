@@ -1,4 +1,4 @@
-package com.iqbalwork.ramadhancamp.shared.common.ui.components.bottomSheet
+﻿package com.iqbalwork.ramadhancamp.shared.common.ui.components.bottomSheet
 
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
@@ -12,6 +12,7 @@ import androidx.navigation3.scene.OverlayScene
 import androidx.navigation3.scene.Scene
 import androidx.navigation3.scene.SceneStrategy
 import androidx.navigation3.scene.SceneStrategyScope
+
 /** An [OverlayScene] that renders an [entry] within a [ModalBottomSheet]. */
 @OptIn(ExperimentalMaterial3Api::class)
 internal class BottomSheetScene<T : Any>(
@@ -21,6 +22,7 @@ internal class BottomSheetScene<T : Any>(
     private val entry: NavEntry<T>,
     private val modalBottomSheetProperties: ModalBottomSheetProperties = ModalBottomSheetProperties(),
     private val containerColor: Color = Color.Transparent,
+    private val dragHandle: @Composable (() -> Unit)? = null,
     private val sheetStateFactory: @Composable () -> SheetState,
     private val onBack: () -> Unit,
 ) : OverlayScene<T> {
@@ -34,6 +36,7 @@ internal class BottomSheetScene<T : Any>(
             sheetState = sheetState,
             onDismissRequest = onBack,
             properties = modalBottomSheetProperties,
+            dragHandle = dragHandle,
         ) {
             entry.Content()
         }
@@ -53,8 +56,11 @@ class BottomSheetSceneStrategy<T : Any>(
 
     override fun SceneStrategyScope<T>.calculateScene(entries: List<NavEntry<T>>): Scene<T>? {
         val lastEntry = entries.lastOrNull()
-        val bottomSheetProperties = lastEntry?.metadata?.get(BOTTOM_SHEET_KEY) as? ModalBottomSheetProperties
+        val metadata = lastEntry?.metadata
+        val bottomSheetProperties = metadata?.get(BOTTOM_SHEET_KEY) as? ModalBottomSheetProperties
         return bottomSheetProperties?.let { properties ->
+            val containerColor = metadata?.get(CONTAINER_COLOR_KEY) as? Color ?: Color.Transparent
+            val dragHandle = metadata?.get(DRAG_HANDLE_KEY) as? (@Composable () -> Unit)
             @Suppress("UNCHECKED_CAST")
             BottomSheetScene(
                 key = lastEntry.contentKey as T,
@@ -62,6 +68,8 @@ class BottomSheetSceneStrategy<T : Any>(
                 overlaidEntries = entries.dropLast(1),
                 entry = lastEntry,
                 modalBottomSheetProperties = properties,
+                containerColor = containerColor,
+                dragHandle = dragHandle,
                 sheetStateFactory = { rememberModalBottomSheetState() },
                 onBack = onBack,
             )
@@ -75,12 +83,23 @@ class BottomSheetSceneStrategy<T : Any>(
          *
          * @param modalBottomSheetProperties properties that should be passed to the containing
          * [ModalBottomSheet].
+         * @param containerColor optional background color for the bottom sheet.
+         * @param dragHandle optional composable for the drag handle of the bottom sheet.
          */
         @OptIn(ExperimentalMaterial3Api::class)
         fun bottomSheet(
             modalBottomSheetProperties: ModalBottomSheetProperties = ModalBottomSheetProperties(),
-        ): Map<String, Any> = mapOf(BOTTOM_SHEET_KEY to modalBottomSheetProperties)
+            containerColor: Color? = null,
+            dragHandle: @Composable (() -> Unit)? = null,
+        ): Map<String, Any> {
+            val map = mutableMapOf<String, Any>(BOTTOM_SHEET_KEY to modalBottomSheetProperties)
+            containerColor?.let { map[CONTAINER_COLOR_KEY] = it }
+            dragHandle?.let { map[DRAG_HANDLE_KEY] = it }
+            return map
+        }
 
         internal const val BOTTOM_SHEET_KEY = "bottomsheet"
+        internal const val CONTAINER_COLOR_KEY = "bottomsheet_container_color"
+        internal const val DRAG_HANDLE_KEY = "bottomsheet_drag_handle"
     }
 }

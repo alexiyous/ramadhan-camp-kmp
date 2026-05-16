@@ -1,4 +1,4 @@
-﻿package com.iqbalwork.ramadhancamp.feature.quran.presentation.model
+package com.iqbalwork.ramadhancamp.feature.quran.presentation.model
 
 import com.iqbalwork.ramadhancamp.feature.quran.domain.model.Ayat
 import com.iqbalwork.ramadhancamp.feature.quran.domain.model.SurahDetail
@@ -10,7 +10,6 @@ data class QuranDetailState(
     val isLoading: Boolean = true,
     val appError: AppError? = null,
     val surahDetail: SurahDetail? = null,
-    val selectedAyatForOptions: Ayat? = null,
     val playingAyat: Ayat? = null,
     val nextAyatAudioUrl: String? = null,
     val isPlaying: Boolean = false,
@@ -22,6 +21,7 @@ data class QuranDetailState(
 )
 
 sealed interface QuranDetailEvent : UiEvent {
+    data class OpenAyatSheet(val ayat: Ayat) : QuranDetailEvent
     data class PlayAudio(val ayat: Ayat) : QuranDetailEvent
     data object StopAudio : QuranDetailEvent
     data object TogglePlayPause : QuranDetailEvent
@@ -30,11 +30,6 @@ sealed interface QuranDetailEvent : UiEvent {
     data class ShareAyat(val text: String) : QuranDetailEvent
     data class AyatRead(val surahId: Int, val surahName: String, val ayatNumber: Int) : QuranDetailEvent
     data object Back : QuranDetailEvent
-    data class OnAyatClicked(val ayat: Ayat) : QuranDetailEvent
-    data object OnCloseOptionsSheet : QuranDetailEvent
-    data class OnBookmarkClicked(val ayat: Ayat) : QuranDetailEvent
-    data class OnShareClicked(val ayat: Ayat) : QuranDetailEvent
-    data class OnCopyClicked(val ayat: Ayat) : QuranDetailEvent
     data class AudioError(val message: String) : QuranDetailEvent
     data object Retry : QuranDetailEvent
     data object OnScreenDispose : QuranDetailEvent

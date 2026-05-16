@@ -1,4 +1,4 @@
-﻿package com.iqbalwork.ramadhancamp.feature.quran.presentation
+package com.iqbalwork.ramadhancamp.feature.quran.presentation
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -14,7 +14,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.iqbalwork.ramadhancamp.feature.quran.presentation.components.AudioPlayerBar
 import com.iqbalwork.ramadhancamp.feature.quran.presentation.components.AyatCard
-import com.iqbalwork.ramadhancamp.feature.quran.presentation.components.AyatOptionsSheet
 import com.iqbalwork.ramadhancamp.feature.quran.presentation.model.QuranDetailEvent
 import com.iqbalwork.ramadhancamp.feature.quran.presentation.model.QuranDetailState
 import com.iqbalwork.ramadhancamp.shared.common.extension.rememberViewModel
@@ -169,25 +168,12 @@ fun QuranDetailContent(state: QuranDetailState, action: (QuranDetailEvent) -> Un
                         itemsIndexed(ayatList) { index, ayat ->
                             AyatCard(
                                 ayat = ayat,
-                                onOptionsClick = { action(QuranDetailEvent.OnAyatClicked(ayat)) },
+                                onOptionsClick = { action(QuranDetailEvent.OpenAyatSheet(ayat)) },
                                 isActive = (ayat == state.playingAyat)
                             )
                         }
                     }
 
-                    if (state.selectedAyatForOptions != null) {
-                        AyatOptionsSheet(
-                            ayat = state.selectedAyatForOptions,
-                            onDismissRequest = { action(QuranDetailEvent.OnCloseOptionsSheet) },
-                            onPlayAudio = {
-                                action(QuranDetailEvent.PlayAudio(state.selectedAyatForOptions))
-                                action(QuranDetailEvent.OnCloseOptionsSheet)
-                            },
-                            onBookmark = { action(QuranDetailEvent.OnBookmarkClicked(state.selectedAyatForOptions)) },
-                            onShare = { action(QuranDetailEvent.OnShareClicked(state.selectedAyatForOptions)) },
-                            onCopy = { action(QuranDetailEvent.OnCopyClicked(state.selectedAyatForOptions)) }
-                        )
-                    }
 
                     if (state.playingAyat != null) {
                         AudioPlayerBar(

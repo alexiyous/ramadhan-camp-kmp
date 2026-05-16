@@ -6,6 +6,8 @@ import com.iqbalwork.ramadhancamp.feature.quran.domain.repository.QuranRepositor
 import com.iqbalwork.ramadhancamp.feature.quran.presentation.QuranDetailScreenParameters
 import com.iqbalwork.ramadhancamp.feature.quran.presentation.QuranDetailViewModel
 import com.iqbalwork.ramadhancamp.feature.quran.presentation.QuranMainViewModel
+import com.iqbalwork.ramadhancamp.feature.quran.presentation.QuranSheetScreenParameters
+import com.iqbalwork.ramadhancamp.feature.quran.presentation.QuranSheetViewModel
 import com.iqbalwork.ramadhancamp.shared.common.navigation.BackStackNode
 import com.iqbalwork.ramadhancamp.shared.common.navigation.NavigationManager
 import com.iqbalwork.ramadhancamp.shared.common.navigation.TabState
@@ -37,6 +39,16 @@ val quranModule = module {
             quranRepository = get(),
             shareManager = get(),
             updateLastSurahRead = get()
+        )
+    }
+
+    viewModel { params ->
+        QuranSheetViewModel(
+            params = params.get<QuranSheetScreenParameters>(),
+            navigationManager = get<NavigationManager> {
+                parametersOf(params.get<BackStackNode>(), params.get<TabState>())
+            },
+            shareManager = get()
         )
     }
 }

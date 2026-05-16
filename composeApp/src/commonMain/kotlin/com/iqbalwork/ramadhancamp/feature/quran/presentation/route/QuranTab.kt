@@ -1,4 +1,4 @@
-﻿package com.iqbalwork.ramadhancamp.feature.quran.presentation.route
+package com.iqbalwork.ramadhancamp.feature.quran.presentation.route
 
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
@@ -11,7 +11,6 @@ import com.iqbalwork.ramadhancamp.shared.common.ui.components.bottomSheet.Bottom
 import com.iqbalwork.ramadhancamp.shared.common.navigation.BackStackNode
 import com.iqbalwork.ramadhancamp.shared.common.navigation.DialogDestination
 import com.iqbalwork.ramadhancamp.shared.common.navigation.FeatureTab
-import com.iqbalwork.ramadhancamp.shared.common.navigation.LocalBackStackNode
 import com.iqbalwork.ramadhancamp.shared.common.navigation.TabDestination
 import com.iqbalwork.ramadhancamp.shared.common.navigation.rememberTabBackStack
 import org.jetbrains.compose.resources.DrawableResource
@@ -32,9 +31,14 @@ object QuranTab : FeatureTab() {
     override fun EntryProviderScope<NavKey>.registerEntries() {
         entry<TabDestination.QuranMain>      { QuranMainScreen() }
         entry<TabDestination.QuranDetail>    { QuranDetailScreen(it.param) }
-        entry<DialogDestination.QuranSheet>(metadata = BottomSheetSceneStrategy.bottomSheet()) {
-            val backStack = LocalBackStackNode.current.backStack
-            QuranSheetScreen(onDismiss = { backStack.removeLastOrNull() })
+        entry<DialogDestination.QuranSheet>(
+            metadata = BottomSheetSceneStrategy.bottomSheet(
+                containerColor = androidx.compose.ui.graphics.Color(0xFF10221D)
+            )
+        ) {
+            QuranSheetScreen(it.param)
         }
     }
 }
+
+

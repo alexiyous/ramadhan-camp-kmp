@@ -1,4 +1,4 @@
-﻿package com.iqbalwork.ramadhancamp.feature.quran.presentation
+package com.iqbalwork.ramadhancamp.feature.quran.presentation
 
 import androidx.lifecycle.viewModelScope
 import chaintech.videoplayer.host.MediaPlayerEvent
@@ -9,7 +9,11 @@ import com.iqbalwork.ramadhancamp.feature.quran.domain.repository.QuranRepositor
 import com.iqbalwork.ramadhancamp.feature.quran.presentation.model.QuranDetailEffect
 import com.iqbalwork.ramadhancamp.feature.quran.presentation.model.QuranDetailEvent
 import com.iqbalwork.ramadhancamp.feature.quran.presentation.model.QuranDetailState
+import com.iqbalwork.ramadhancamp.feature.quran.presentation.QuranSheetScreenParameters
+import com.iqbalwork.ramadhancamp.shared.common.navigation.AyatNumberResult
+import com.iqbalwork.ramadhancamp.shared.common.navigation.DialogDestination
 import com.iqbalwork.ramadhancamp.shared.common.navigation.NavigationManager
+import com.iqbalwork.ramadhancamp.shared.common.navigation.NavigationResultData
 import com.iqbalwork.ramadhancamp.shared.common.ui.BaseViewModel
 import com.iqbalwork.ramadhancamp.shared.common.utils.ShareManager
 import kotlinx.coroutines.delay
@@ -29,7 +33,8 @@ class QuranDetailViewModel(
     private val shareManager: ShareManager,
     private val updateLastSurahRead: UpdateLastSurahRead
 ) : BaseViewModel<QuranDetailScreenParameters, QuranDetailState, QuranDetailEvent, QuranDetailEffect>(
-    params, QuranDetailState(), navigationManager
+    params, QuranDetailState(), navigationManager,
+    resultKeys = arrayOf("quran_sheet_play")
 ) {
 
     // Media player host that survives tab switches
@@ -255,22 +260,16 @@ class QuranDetailViewModel(
             is QuranDetailEvent.Back -> {
                 navigationManager.back()
             }
-            is QuranDetailEvent.OnAyatClicked -> {
-                updateState { copy(selectedAyatForOptions = event.ayat) }
-            }
-            is QuranDetailEvent.OnCloseOptionsSheet -> {
-                updateState { copy(selectedAyatForOptions = null) }
-            }
-            is QuranDetailEvent.OnBookmarkClicked -> {
-                updateState { copy(selectedAyatForOptions = null) }
-            }
-            is QuranDetailEvent.OnShareClicked -> {
-                val shareText = "" + event.ayat.teksArab + "\n\n" + event.ayat.teksLatin + "\n\n" + event.ayat.teksIndonesia
-                shareManager.shareText(shareText)
-                updateState { copy(selectedAyatForOptions = null) }
-            }
-            is QuranDetailEvent.OnCopyClicked -> {
-                updateState { copy(selectedAyatForOptions = null) }
+            is QuranDetailEvent.OpenAyatSheet -> {
+                val params = QuranSheetScreenParameters(
+                    surahId = state.value.surahDetail?.number ?: return,
+                    ayatNumber = event.ayat.nomorAyat,
+                    surahName = state.value.surahDetail?.namaLatin ?: "",
+                    teksArab = event.ayat.teksArab,
+                    teksLatin = event.ayat.teksLatin,
+                    teksIndonesia = event.ayat.teksIndonesia
+                )
+                navigationManager.showDialog(DialogDestination.QuranSheet(params))
             }
             is QuranDetailEvent.AudioError -> {
                 showSnackBar(
@@ -303,6 +302,17 @@ class QuranDetailViewModel(
             is QuranDetailEvent.InitialScrollConsumed -> {
                 updateState { copy(hasScrolledToInitialAyah = true) }
             }
+        }
+    }
+
+    override fun navigationResultSuccess(key: String, data: NavigationResultData?) {
+        when (key) {
+            "quran_sheet_play" -> {
+                val ayatNumber = (data as? AyatNumberResult)?.ayatNumber ?: return
+                val ayat = state.value.surahDetail?.ayat?.find { it.nomorAyat == ayatNumber } ?: return
+                handleEvent(QuranDetailEvent.PlayAudio(ayat))
+            }
+            else -> super.navigationResultSuccess(key, data)
         }
     }
 }

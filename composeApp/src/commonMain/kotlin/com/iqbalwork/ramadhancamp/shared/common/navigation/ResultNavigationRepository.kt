@@ -54,3 +54,6 @@ data class LastSurahNavigationData(
 data class SurahNavigationData(
     val surahId: Int
 ) : NavigationResultData
+
+
+data class AyatNumberResult(val ayatNumber: Int) : NavigationResultData
