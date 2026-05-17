@@ -1,14 +1,12 @@
 ﻿package com.iqbalwork.ramadhancamp.feature.bookmark.presentation
 
 import androidx.lifecycle.viewModelScope
-import com.iqbalwork.ramadhancamp.feature.bookmark.domain.model.Category
 import com.iqbalwork.ramadhancamp.feature.bookmark.domain.repository.BookmarkRepository
 import com.iqbalwork.ramadhancamp.feature.bookmark.presentation.model.BookmarkEffect
 import com.iqbalwork.ramadhancamp.feature.bookmark.presentation.model.BookmarkEvent
 import com.iqbalwork.ramadhancamp.feature.bookmark.presentation.model.BookmarkState
 import com.iqbalwork.ramadhancamp.feature.quran.presentation.QuranDetailScreenParameters
 import com.iqbalwork.ramadhancamp.feature.quran.presentation.route.QuranTab
-import com.iqbalwork.ramadhancamp.shared.common.audio.AudioController
 import com.iqbalwork.ramadhancamp.shared.common.navigation.DialogDestination
 import com.iqbalwork.ramadhancamp.shared.common.navigation.NavigationManager
 import com.iqbalwork.ramadhancamp.shared.common.navigation.TabDestination
@@ -16,18 +14,21 @@ import com.iqbalwork.ramadhancamp.shared.common.ui.BaseViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import com.iqbalwork.ramadhancamp.shared.utils.TAG_BOOKMARK_FTS
+import io.github.aakira.napier.Napier
 
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 class BookmarkViewModel(
     navigationManager: NavigationManager,
     private val bookmarkRepository: BookmarkRepository,
-    private val audioController: AudioController
 ) : BaseViewModel<Unit, BookmarkState, BookmarkEvent, BookmarkEffect>(
     Unit, BookmarkState(), navigationManager
 ) {
@@ -36,30 +37,6 @@ class BookmarkViewModel(
     init {
         loadCategories()
         observeBookmarks()
-        observeAudioState()
-    }
-
-    private fun observeAudioState() {
-        audioController.isPlaying.onEach { isPlaying ->
-            updateState { copy(isPlaying = isPlaying) }
-        }.launchIn(viewModelScope)
-
-        audioController.currentTimeMs.onEach { ms ->
-            updateState { copy(currentTimeMs = ms) }
-        }.launchIn(viewModelScope)
-
-        audioController.totalTimeMs.onEach { ms ->
-            updateState { copy(totalTimeMs = ms) }
-        }.launchIn(viewModelScope)
-
-        audioController.isBuffering.onEach { isBuffering ->
-            updateState { copy(isBuffering = isBuffering) }
-        }.launchIn(viewModelScope)
-
-        audioController.mediaEnded.onEach {
-            audioController.stop()
-            updateState { copy(playingBookmark = null, isPlaying = false, currentTimeMs = 0L) }
-        }.launchIn(viewModelScope)
     }
 
     private fun loadCategories() {
@@ -71,20 +48,34 @@ class BookmarkViewModel(
     }
 
     private fun observeBookmarks() {
-        searchQueryFlow
-            .debounce(300)
-            .distinctUntilChanged()
-            .flatMapLatest { query ->
-                bookmarkRepository.searchBookmarks(query)
-            }
-            .onEach { allBookmarks ->
-                val selectedCategoryId = state.value.selectedCategoryId
-                val filtered = if (selectedCategoryId != null) {
-                    allBookmarks.filter { it.categoryId == selectedCategoryId }
-                } else {
-                    allBookmarks
+        combine(
+            searchQueryFlow.debounce(300),
+            state.map { it.selectedCategoryId }.distinctUntilChanged()
+        ) { query, categoryId ->
+            Napier.d(tag = TAG_BOOKMARK_FTS) { "combine emitted — query=\"${query}\", categoryId=${categoryId}" }
+            query to categoryId
+        }
+            .flatMapLatest { (query, categoryId) ->
+                val route = when {
+                    query.isNotBlank() && categoryId != null -> "searchBookmarksByCategory"
+                    query.isNotBlank() -> "searchBookmarks"
+                    categoryId != null -> "getBookmarksByCategory"
+                    else -> "getAllBookmarks"
                 }
-                updateState { copy(bookmarks = filtered) }
+                Napier.d(tag = TAG_BOOKMARK_FTS) { "flatMapLatest routing to: ${route}" }
+                when {
+                    query.isNotBlank() && categoryId != null ->
+                        bookmarkRepository.searchBookmarksByCategory(query, categoryId)
+                    query.isNotBlank() ->
+                        bookmarkRepository.searchBookmarks(query)
+                    categoryId != null ->
+                        bookmarkRepository.getBookmarksByCategory(categoryId)
+                    else -> bookmarkRepository.getAllBookmarks()
+                }
+            }
+            .onEach { bookmarks ->
+                Napier.d(tag = TAG_BOOKMARK_FTS) { "onEach received ${bookmarks.size} bookmarks" }
+                updateState { copy(bookmarks = bookmarks) }
             }
             .launchIn(viewModelScope)
     }
@@ -92,12 +83,13 @@ class BookmarkViewModel(
     override fun handleEvent(event: BookmarkEvent) {
         when (event) {
             is BookmarkEvent.OnSearchQueryChanged -> {
+                Napier.d(tag = TAG_BOOKMARK_FTS) { "OnSearchQueryChanged — query=\"${event.query}\"" }
                 updateState { copy(searchQuery = event.query) }
                 searchQueryFlow.value = event.query
             }
             is BookmarkEvent.OnCategorySelected -> {
+                Napier.d(tag = TAG_BOOKMARK_FTS) { "OnCategorySelected — categoryId=${event.categoryId}" }
                 updateState { copy(selectedCategoryId = event.categoryId) }
-                searchQueryFlow.value = state.value.searchQuery
             }
             is BookmarkEvent.OnAddBookmarkClick -> {
                 navigationManager.showDialog(DialogDestination.BookmarkCreateCategory)
@@ -109,7 +101,6 @@ class BookmarkViewModel(
                 val category = state.value.categoryToDelete ?: return
                 viewModelScope.launch {
                     bookmarkRepository.deleteCategory(category.id)
-                    // If the deleted category was selected, reset filter
                     if (state.value.selectedCategoryId == category.id) {
                         updateState { copy(selectedCategoryId = null) }
                     }
@@ -131,46 +122,17 @@ class BookmarkViewModel(
                     )
                 )
             }
-            is BookmarkEvent.OnPlayClick -> {
-                val bookmark = event.bookmark
-                if (state.value.playingBookmark?.id == bookmark.id) {
-                    if (state.value.isPlaying) {
-                        audioController.pause()
-                    } else {
-                        audioController.play()
-                    }
-                } else {
-                    updateState {
-                        copy(
-                            playingBookmark = bookmark,
-                            isPlaying = true,
-                            isBuffering = true,
-                            currentTimeMs = 0L,
-                            totalTimeMs = 0L
-                        )
-                    }
-                    val url = bookmark.audioUrl
-                    if (url == audioController.lastLoadedUrl.value) {
-                        audioController.seekToZero()
-                        audioController.play()
-                    } else {
-                        audioController.loadUrl(url)
-                        viewModelScope.launch {
-                            kotlinx.coroutines.delay(100)
-                            audioController.play()
-                        }
-                    }
-                }
+            is BookmarkEvent.OnBackClicked -> {
+                navigationManager.back()
             }
-            is BookmarkEvent.TogglePlayPause -> {
-                if (state.value.isPlaying) {
-                    audioController.pause()
-                } else if (state.value.playingBookmark != null) {
-                    audioController.play()
-                }
+            is BookmarkEvent.OnSearchClicked -> {
+                Napier.d(tag = TAG_BOOKMARK_FTS) { "OnSearchClicked — entering search mode" }
+                updateState { copy(isSearchActive = true) }
             }
-            is BookmarkEvent.OnSeekAudio -> {
-                audioController.seekTo(event.positionMs)
+            is BookmarkEvent.OnSearchCloseClicked -> {
+                Napier.d(tag = TAG_BOOKMARK_FTS) { "OnSearchCloseClicked — clearing search, exiting search mode" }
+                updateState { copy(searchQuery = "", isSearchActive = false) }
+                searchQueryFlow.value = ""
             }
         }
     }

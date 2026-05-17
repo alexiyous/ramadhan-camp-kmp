@@ -22,8 +22,14 @@ interface BookmarkDao {
     @Query("SELECT * FROM category")
     fun getAllCategories(): Flow<List<CategoryEntity>>
 
-    @Query("SELECT b.* FROM bookmark b JOIN bookmark_fts fts ON b.id = fts.rowid WHERE fts.ayah_details MATCH :query")
+    @Query("SELECT b.* FROM bookmark b WHERE b.id IN (SELECT rowid FROM bookmark_fts WHERE bookmark_fts MATCH :query)")
     fun searchBookmarks(query: String): Flow<List<BookmarkEntity>>
+
+    @Query("SELECT * FROM bookmark WHERE category_id = :categoryId ORDER BY timestamp DESC")
+    fun getBookmarksByCategory(categoryId: Long): Flow<List<BookmarkEntity>>
+
+    @Query("SELECT b.* FROM bookmark b WHERE b.id IN (SELECT rowid FROM bookmark_fts WHERE bookmark_fts MATCH :query) AND b.category_id = :categoryId")
+    fun searchBookmarksByCategory(query: String, categoryId: Long): Flow<List<BookmarkEntity>>
 
     @Query("DELETE FROM bookmark WHERE id = :id")
     suspend fun deleteBookmark(id: Long)

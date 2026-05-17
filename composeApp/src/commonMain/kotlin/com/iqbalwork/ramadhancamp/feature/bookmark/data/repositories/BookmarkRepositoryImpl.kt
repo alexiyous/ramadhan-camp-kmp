@@ -1,4 +1,4 @@
-package com.iqbalwork.ramadhancamp.feature.bookmark.data.repositories
+﻿package com.iqbalwork.ramadhancamp.feature.bookmark.data.repositories
 
 import com.iqbalwork.ramadhancamp.feature.bookmark.data.database.dao.BookmarkDao
 import com.iqbalwork.ramadhancamp.feature.bookmark.data.database.entity.BookmarkEntity
@@ -6,6 +6,8 @@ import com.iqbalwork.ramadhancamp.feature.bookmark.data.database.entity.Category
 import com.iqbalwork.ramadhancamp.feature.bookmark.domain.model.Bookmark
 import com.iqbalwork.ramadhancamp.feature.bookmark.domain.model.Category
 import com.iqbalwork.ramadhancamp.feature.bookmark.domain.repository.BookmarkRepository
+import com.iqbalwork.ramadhancamp.shared.utils.TAG_BOOKMARK_FTS
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -14,40 +16,74 @@ class BookmarkRepositoryImpl(
 ) : BookmarkRepository {
 
     override fun getAllBookmarks(): Flow<List<Bookmark>> {
+        Napier.d(tag = TAG_BOOKMARK_FTS) { "getAllBookmarks() — fetching all bookmarks" }
         return dao.getAllBookmarks().map { list ->
+            Napier.d(tag = TAG_BOOKMARK_FTS) { "getAllBookmarks() — found ${list.size} bookmarks" }
             list.map { it.toDomain() }
         }
     }
 
     override fun getAllCategories(): Flow<List<Category>> {
+        Napier.d(tag = TAG_BOOKMARK_FTS) { "getAllCategories() — fetching all categories" }
         return dao.getAllCategories().map { list ->
+            Napier.d(tag = TAG_BOOKMARK_FTS) { "getAllCategories() — found ${list.size} categories" }
             list.map { it.toDomain() }
         }
     }
 
     override fun searchBookmarks(query: String): Flow<List<Bookmark>> {
+        Napier.d(tag = TAG_BOOKMARK_FTS) { "searchBookmarks() called — query=\"$query\"" }
         if (query.isBlank()) {
+            Napier.d(tag = TAG_BOOKMARK_FTS) { "searchBookmarks() — query is blank, falling back to getAllBookmarks()" }
             return getAllBookmarks()
         }
+        Napier.d(tag = TAG_BOOKMARK_FTS) { "searchBookmarks() — delegating to dao.searchBookmarks(\"$query\")" }
         return dao.searchBookmarks(query).map { list ->
+            Napier.d(tag = TAG_BOOKMARK_FTS) { "searchBookmarks(\"$query\") — FTS returned ${list.size} results" }
+            list.map { it.toDomain() }
+        }
+    }
+
+    override fun getBookmarksByCategory(categoryId: Long): Flow<List<Bookmark>> {
+        Napier.d(tag = TAG_BOOKMARK_FTS) { "getBookmarksByCategory() called — categoryId=$categoryId" }
+        return dao.getBookmarksByCategory(categoryId).map { list ->
+            Napier.d(tag = TAG_BOOKMARK_FTS) { "getBookmarksByCategory($categoryId) — found ${list.size} bookmarks" }
+            list.map { it.toDomain() }
+        }
+    }
+
+    override fun searchBookmarksByCategory(query: String, categoryId: Long): Flow<List<Bookmark>> {
+        Napier.d(tag = TAG_BOOKMARK_FTS) { "searchBookmarksByCategory() called — query=\"$query\", categoryId=$categoryId" }
+        return dao.searchBookmarksByCategory(query, categoryId).map { list ->
+            Napier.d(tag = TAG_BOOKMARK_FTS) { "searchBookmarksByCategory(\"$query\", $categoryId) — FTS returned ${list.size} results" }
             list.map { it.toDomain() }
         }
     }
 
     override suspend fun addBookmark(bookmark: Bookmark): Long {
-        return dao.insertBookmark(bookmark.toEntity())
+        Napier.d(tag = TAG_BOOKMARK_FTS) { "addBookmark() called — id=${bookmark.id}, surahName=${bookmark.surahName}, ayatNumber=${bookmark.ayatNumber}" }
+        val result = dao.insertBookmark(bookmark.toEntity())
+        Napier.d(tag = TAG_BOOKMARK_FTS) { "addBookmark() — inserted with id=$result" }
+        return result
     }
 
     override suspend fun addCategory(category: Category): Long {
-        return dao.insertCategory(category.toEntity())
+        Napier.d(tag = TAG_BOOKMARK_FTS) { "addCategory() called — name=\"${category.name}\"" }
+        val result = dao.insertCategory(category.toEntity())
+        Napier.d(tag = TAG_BOOKMARK_FTS) { "addCategory() — inserted with id=$result" }
+        return result
     }
 
     override suspend fun deleteBookmark(id: Long) {
+        Napier.d(tag = TAG_BOOKMARK_FTS) { "deleteBookmark() called — id=$id" }
         dao.deleteBookmark(id)
+        Napier.d(tag = TAG_BOOKMARK_FTS) { "deleteBookmark($id) — completed" }
     }
 
     override suspend fun deleteCategory(id: Long) {
+        Napier.d(tag = TAG_BOOKMARK_FTS) { "deleteCategory() called — id=$id" }
         dao.deleteCategory(id)
+        Napier.d(tag = TAG_BOOKMARK_FTS) { "deleteCategory($id) — completed" }
     }
 
     private fun BookmarkEntity.toDomain() = Bookmark(
