@@ -1,5 +1,9 @@
-﻿package com.iqbalwork.ramadhancamp.feature.bookmark.presentation
+package com.iqbalwork.ramadhancamp.feature.bookmark.presentation
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -165,140 +169,160 @@ fun BookmarkContent(
         )
     }
 
-    Scaffold(
-        topBar = {
-            if (state.isSearchActive) {
-                BookmarkSearchBar(
-                    query = state.searchQuery,
-                    onQueryChange = { action(BookmarkEvent.OnSearchQueryChanged(it)) },
-                    onBack = {
-                        keyboardController?.hide()
-                        action(BookmarkEvent.OnSearchCloseClicked)
-                    },
-                    onClear = {
-                        action(BookmarkEvent.OnSearchQueryChanged(""))
-                    },
-                    focusRequester = focusRequester,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            } else {
-                TopAppBar(
-                    title = { Text("Ayat Favorit", style = typography.headlineSmall, color = colors.textPrimary) },
-                    navigationIcon = {
-                        IconButton(onClick = { action(BookmarkEvent.OnBackClicked) }) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Back",
-                                tint = colors.textPrimary
+    SharedTransitionLayout {
+        Scaffold(
+            topBar = {
+                AnimatedContent(
+                    targetState = state.isSearchActive,
+                    label = "search_transition"
+                ) { isSearchActive ->
+                    if (isSearchActive) {
+                        BookmarkSearchBar(
+                            query = state.searchQuery,
+                            onQueryChange = { action(BookmarkEvent.OnSearchQueryChanged(it)) },
+                            onBack = {
+                                keyboardController?.hide()
+                                action(BookmarkEvent.OnSearchCloseClicked)
+                            },
+                            onClear = {
+                                action(BookmarkEvent.OnSearchQueryChanged(""))
+                            },
+                            focusRequester = focusRequester,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .sharedBounds(
+                                    sharedContentState = rememberSharedContentState(key = "search_bar"),
+                                    animatedVisibilityScope = this@AnimatedContent,
+                                    enter = fadeIn(),
+                                    exit = fadeOut()
+                                )
+                        )
+                    } else {
+                        TopAppBar(
+                            modifier = Modifier.sharedBounds(
+                                sharedContentState = rememberSharedContentState(key = "search_bar"),
+                                animatedVisibilityScope = this@AnimatedContent,
+                                enter = fadeIn(),
+                                exit = fadeOut()
+                            ),
+                            title = { Text("Ayat Favorit", style = typography.headlineSmall, color = colors.textPrimary) },
+                            navigationIcon = {
+                                IconButton(onClick = { action(BookmarkEvent.OnBackClicked) }) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                        contentDescription = "Back",
+                                        tint = colors.textPrimary
+                                    )
+                                }
+                            },
+                            actions = {
+                                IconButton(onClick = { action(BookmarkEvent.OnSearchClicked) }) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Search,
+                                        contentDescription = "Search",
+                                        tint = colors.textPrimary
+                                    )
+                                }
+                                IconButton(onClick = { action(BookmarkEvent.OnAddBookmarkClick) }) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Add,
+                                        contentDescription = "Add",
+                                        tint = colors.textPrimary
+                                    )
+                                }
+                            },
+                            colors = TopAppBarDefaults.topAppBarColors(
+                                containerColor = colors.bgPrimary
                             )
-                        }
-                    },
-                    actions = {
-                        IconButton(onClick = { action(BookmarkEvent.OnSearchClicked) }) {
-                            Icon(
-                                imageVector = Icons.Outlined.Search,
-                                contentDescription = "Search",
-                                tint = colors.textPrimary
-                            )
-                        }
-                        IconButton(onClick = { action(BookmarkEvent.OnAddBookmarkClick) }) {
-                            Icon(
-                                imageVector = Icons.Outlined.Add,
-                                contentDescription = "Add",
-                                tint = colors.textPrimary
-                            )
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = colors.bgPrimary
-                    )
-                )
-            }
-        },
-        containerColor = colors.bgPrimary
-    ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
-            Column(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                // Category tabs
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    item {
-                        CategoryChip(
-                            name = "Semua",
-                            isSelected = state.selectedCategoryId == null,
-                            onClick = { action(BookmarkEvent.OnCategorySelected(null)) },
-                            color = 0xFF4ADE80L
                         )
                     }
-                    items(state.categories) { category ->
-                        Box {
-                            CategoryChip(
-                                name = category.name,
-                                isSelected = state.selectedCategoryId == category.id,
-                                onClick = { action(BookmarkEvent.OnCategorySelected(category.id)) },
-                                onLongClick = { action(BookmarkEvent.OnDeleteCategoryClicked(category)) },
-                                color = category.color
-                            )
-                        }
-                    }
                 }
-
-                // Bookmark list or empty search results
-                if (state.bookmarks.isEmpty() && state.searchQuery.isNotBlank()) {
-                    // Empty search results
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
+            },
+            containerColor = colors.bgPrimary
+        ) { innerPadding ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    // Category tabs
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Icon(
-                                imageVector = Icons.Default.Search,
-                                contentDescription = null,
-                                tint = colors.textMuted,
-                                modifier = Modifier.size(64.dp)
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(
-                                text = "Tidak ada hasil untuk \"${state.searchQuery}\"",
-                                style = typography.bodyLarge,
-                                color = colors.textSecondary
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = "Coba kata kunci lain",
-                                style = typography.labelSmall,
-                                color = colors.textMuted
+                        item {
+                            CategoryChip(
+                                name = "Semua",
+                                isSelected = state.selectedCategoryId == null,
+                                onClick = { action(BookmarkEvent.OnCategorySelected(null)) },
+                                color = 0xFF4ADE80L
                             )
                         }
+                        items(state.categories) { category ->
+                            Box {
+                                CategoryChip(
+                                    name = category.name,
+                                    isSelected = state.selectedCategoryId == category.id,
+                                    onClick = { action(BookmarkEvent.OnCategorySelected(category.id)) },
+                                    onLongClick = { action(BookmarkEvent.OnDeleteCategoryClicked(category)) },
+                                    color = category.color
+                                )
+                            }
+                        }
                     }
-                } else {
-                    LazyColumn(
-                        contentPadding = PaddingValues(
-                            start = 16.dp,
-                            end = 16.dp,
-                            top = 0.dp,
-                            bottom = 16.dp
-                        ),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        items(state.bookmarks) { bookmark ->
-                            val category = state.categories.find { it.id == bookmark.categoryId }
-                            BookmarkCard(
-                                bookmark = bookmark,
-                                categoryName = category?.name ?: "Unknown",
-                                categoryColor = category?.color ?: 0xFF4ADE80L,
-                                onClick = { action(BookmarkEvent.OnBookmarkClick(bookmark)) },
-                                onBookmarkClick = { action(BookmarkEvent.OnDeleteBookmarkClicked(bookmark)) }
-                            )
+
+                    // Bookmark list or empty search results
+                    if (state.bookmarks.isEmpty() && state.searchQuery.isNotBlank()) {
+                        // Empty search results
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Icon(
+                                    imageVector = Icons.Default.Search,
+                                    contentDescription = null,
+                                    tint = colors.textMuted,
+                                    modifier = Modifier.size(64.dp)
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text(
+                                    text = "Tidak ada hasil untuk \"${state.searchQuery}\"",
+                                    style = typography.bodyLarge,
+                                    color = colors.textSecondary
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "Coba kata kunci lain",
+                                    style = typography.labelSmall,
+                                    color = colors.textMuted
+                                )
+                            }
+                        }
+                    } else {
+                        LazyColumn(
+                            contentPadding = PaddingValues(
+                                start = 16.dp,
+                                end = 16.dp,
+                                top = 0.dp,
+                                bottom = 16.dp
+                            ),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            items(state.bookmarks) { bookmark ->
+                                val category = state.categories.find { it.id == bookmark.categoryId }
+                                BookmarkCard(
+                                    bookmark = bookmark,
+                                    categoryName = category?.name ?: "Unknown",
+                                    categoryColor = category?.color ?: 0xFF4ADE80L,
+                                    onClick = { action(BookmarkEvent.OnBookmarkClick(bookmark)) },
+                                    onBookmarkClick = { action(BookmarkEvent.OnDeleteBookmarkClicked(bookmark)) }
+                                )
+                            }
                         }
                     }
                 }
