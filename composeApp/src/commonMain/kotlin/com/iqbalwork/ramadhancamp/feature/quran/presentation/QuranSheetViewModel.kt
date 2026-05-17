@@ -15,13 +15,17 @@ import com.iqbalwork.ramadhancamp.shared.common.ui.BaseViewModel
 import com.iqbalwork.ramadhancamp.shared.common.utils.ShareManager
 import com.iqbalwork.ramadhancamp.shared.utils.TAG_BOOKMARK_FTS
 import io.github.aakira.napier.Napier
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 
+@OptIn(FlowPreview::class)
 class QuranSheetViewModel(
     params: QuranSheetScreenParameters,
     navigationManager: NavigationManager,
@@ -35,15 +39,32 @@ class QuranSheetViewModel(
     private val ayatBookmarksMap = mutableMapOf<Long, Long>() // categoryId ? bookmarkId
 
     init {
-        combine(
-            bookmarkRepository.getAllCategories(),
-            searchQueryFlow
-        ) { allCategories, query ->
-            if (query.isBlank()) allCategories
-            else allCategories.filter { it.name.contains(query, ignoreCase = true) }
-        }.onEach { filtered ->
-            updateState { copy(categories = filtered) }
-        }.launchIn(viewModelScope)
+        searchQueryFlow
+            .debounce(300)
+            .distinctUntilChanged()
+            .combine(bookmarkRepository.getAllCategories()) { query, allCategories ->
+                if (query.isBlank()) allCategories
+                else {
+                    val lowerQuery = query.lowercase()
+                    // Relevance sorting: starts-with first, then word-boundary, then contains
+                    val startsWith = mutableListOf<Category>()
+                    val wordBoundary = mutableListOf<Category>()
+                    val contains = mutableListOf<Category>()
+                    for (category in allCategories) {
+                        val lowerName = category.name.lowercase()
+                        when {
+                            lowerName.startsWith(lowerQuery) -> startsWith.add(category)
+                            lowerName.contains(" $lowerQuery") -> wordBoundary.add(category)
+                            lowerName.contains(lowerQuery) -> contains.add(category)
+                        }
+                    }
+                    startsWith + wordBoundary + contains
+                }
+            }
+            .onEach { filtered ->
+                updateState { copy(categories = filtered) }
+            }
+            .launchIn(viewModelScope)
 
         observeAyatBookmarks()
     }
@@ -125,8 +146,9 @@ class QuranSheetViewModel(
                 updateState { copy(step = SheetStep.CreatePlaylist, newCategoryName = "") }
             }
             is QuranSheetEvent.OnSearchQueryChanged -> {
-                updateState { copy(searchQuery = event.query) }
-                searchQueryFlow.value = event.query
+                val trimmed = event.query.trimStart()
+                updateState { copy(searchQuery = trimmed) }
+                searchQueryFlow.value = trimmed
             }
             is QuranSheetEvent.SelectCategory -> {
                 val categoryId = event.categoryId

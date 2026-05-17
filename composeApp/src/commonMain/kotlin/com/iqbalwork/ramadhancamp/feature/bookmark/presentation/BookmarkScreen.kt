@@ -124,6 +124,47 @@ fun BookmarkContent(
         )
     }
 
+    // Delete bookmark confirmation dialog
+    if (state.bookmarkToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { action(BookmarkEvent.DismissDeleteBookmark) },
+            title = {
+                Text(
+                    text = "Hapus Bookmark?",
+                    style = typography.headlineSmall,
+                    color = colors.textPrimary
+                )
+            },
+            text = {
+                Text(
+                    text = "Bookmark untuk ayat ini akan dihapus.",
+                    style = typography.bodyLarge,
+                    color = colors.textSecondary
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = { action(BookmarkEvent.ConfirmDeleteBookmark) },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = colors.accentPrimary
+                    )
+                ) {
+                    Text("Hapus", color = colors.textOnLight)
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { action(BookmarkEvent.DismissDeleteBookmark) }
+                ) {
+                    Text("Batal", color = colors.textMuted)
+                }
+            },
+            containerColor = colors.bgSecondary,
+            titleContentColor = colors.textPrimary,
+            textContentColor = colors.textSecondary
+        )
+    }
+
     Scaffold(
         topBar = {
             if (state.isSearchActive) {
@@ -251,7 +292,8 @@ fun BookmarkContent(
                             BookmarkCard(
                                 bookmark = bookmark,
                                 categoryName = state.categories.find { it.id == bookmark.categoryId }?.name ?: "Unknown",
-                                onClick = { action(BookmarkEvent.OnBookmarkClick(bookmark)) }
+                                onClick = { action(BookmarkEvent.OnBookmarkClick(bookmark)) },
+                                onBookmarkClick = { action(BookmarkEvent.OnDeleteBookmarkClicked(bookmark)) }
                             )
                         }
                     }

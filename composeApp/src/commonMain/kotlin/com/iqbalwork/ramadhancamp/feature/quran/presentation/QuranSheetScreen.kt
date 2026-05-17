@@ -1,4 +1,4 @@
-package com.iqbalwork.ramadhancamp.feature.quran.presentation
+﻿package com.iqbalwork.ramadhancamp.feature.quran.presentation
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Share
@@ -320,7 +321,7 @@ private fun RemoveFromPlaylistContent(
             }
         } else {
             Text(
-                text = "Pilih playlist untuk menghapus bookmark:",
+                text = "Pilih playlist untuk menghapus Bookmark:",
                 style = typography.bodyLarge,
                 color = colors.textSecondary,
                 modifier = Modifier.padding(bottom = 8.dp)
@@ -450,6 +451,20 @@ private fun PlaylistPickerContent(
                     modifier = Modifier.size(20.dp)
                 )
             },
+            trailingIcon = {
+                if (state.searchQuery.isNotEmpty()) {
+                    IconButton(
+                        onClick = { action(QuranSheetEvent.OnSearchQueryChanged("")) }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Hapus pencarian",
+                            tint = colors.textMuted,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = 48.dp),
@@ -474,36 +489,88 @@ private fun PlaylistPickerContent(
                 .heightIn(max = 360.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            // "Buat playlist baru" row � always visible
-            PlaylistCreateRow(
-                onClick = { action(QuranSheetEvent.OpenCreatePlaylist) }
-            )
-
-            Spacer(modifier = Modifier.height(2.dp))
-
-            if (state.categories.isEmpty() && state.searchQuery.isNotBlank()) {
-                // Empty state
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 32.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Playlist tidak ditemukan",
-                        style = typography.bodyLarge,
-                        color = colors.textMuted
-                    )
+            // Category results (or empty state)
+            if (state.categories.isEmpty()) {
+                if (state.searchQuery.isNotBlank()) {
+                    // No search results empty state
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 24.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Search,
+                                contentDescription = null,
+                                tint = colors.textMuted,
+                                modifier = Modifier.size(32.dp)
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "Playlist tidak ditemukan",
+                                style = typography.bodyLarge,
+                                color = colors.textSecondary
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "Coba kata kunci lain atau buat playlist baru",
+                                style = typography.labelSmall,
+                                color = colors.textMuted
+                            )
+                        }
+                    }
+                } else {
+                    // No categories at all empty state
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 24.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Folder,
+                                contentDescription = null,
+                                tint = colors.textMuted,
+                                modifier = Modifier.size(32.dp)
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "Belum ada playlist",
+                                style = typography.bodyLarge,
+                                color = colors.textSecondary
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "Buat playlist baru untuk menyimpan ayat",
+                                style = typography.labelSmall,
+                                color = colors.textMuted
+                            )
+                        }
+                    }
                 }
             } else {
                 state.categories.forEach { category ->
                     PlaylistCategoryRow(
                         category = category,
+                        isAlreadySaved = state.bookmarkCategories.any { it.id == category.id },
                         onClick = { action(QuranSheetEvent.SelectCategory(category.id)) }
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                 }
             }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // "Buat playlist baru" row — always visible at bottom
+            PlaylistCreateRow(
+                onClick = { action(QuranSheetEvent.OpenCreatePlaylist) }
+            )
         }
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -555,6 +622,7 @@ private fun PlaylistCreateRow(onClick: () -> Unit) {
 @Composable
 private fun PlaylistCategoryRow(
     category: Category,
+    isAlreadySaved: Boolean = false,
     onClick: () -> Unit
 ) {
     val colors = RamadhanTheme.colors
@@ -596,12 +664,21 @@ private fun PlaylistCategoryRow(
 
         Spacer(modifier = Modifier.width(8.dp))
 
-        Icon(
-            imageVector = Icons.Outlined.Add,
-            contentDescription = "Tambah ke playlist ini",
-            tint = colors.textMuted,
-            modifier = Modifier.size(18.dp)
-        )
+        if (isAlreadySaved) {
+            Icon(
+                imageVector = Icons.Default.Bookmark,
+                contentDescription = "Sudah disimpan",
+                tint = colors.accentPrimary,
+                modifier = Modifier.size(18.dp)
+            )
+        } else {
+            Icon(
+                imageVector = Icons.Outlined.Add,
+                contentDescription = "Tambah ke playlist ini",
+                tint = colors.textMuted,
+                modifier = Modifier.size(18.dp)
+            )
+        }
     }
 }
 

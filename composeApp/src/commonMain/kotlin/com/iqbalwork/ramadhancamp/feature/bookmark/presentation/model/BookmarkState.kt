@@ -10,5 +10,6 @@ data class BookmarkState(
     val bookmarks: List<Bookmark> = emptyList(),
     val isLoading: Boolean = false,
     val categoryToDelete: Category? = null,
+    val bookmarkToDelete: Bookmark? = null,
     val isSearchActive: Boolean = false
 )

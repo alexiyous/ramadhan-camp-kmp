@@ -1,4 +1,4 @@
-﻿package com.iqbalwork.ramadhancamp.feature.bookmark.presentation
+package com.iqbalwork.ramadhancamp.feature.bookmark.presentation
 
 import androidx.lifecycle.viewModelScope
 import com.iqbalwork.ramadhancamp.feature.bookmark.domain.repository.BookmarkRepository
@@ -52,7 +52,7 @@ class BookmarkViewModel(
             searchQueryFlow.debounce(300),
             state.map { it.selectedCategoryId }.distinctUntilChanged()
         ) { query, categoryId ->
-            Napier.d(tag = TAG_BOOKMARK_FTS) { "combine emitted — query=\"${query}\", categoryId=${categoryId}" }
+            Napier.d(tag = TAG_BOOKMARK_FTS) { "combine emitted — query=\"$query\", categoryId=$categoryId" }
             query to categoryId
         }
             .flatMapLatest { (query, categoryId) ->
@@ -62,7 +62,7 @@ class BookmarkViewModel(
                     categoryId != null -> "getBookmarksByCategory"
                     else -> "getAllBookmarks"
                 }
-                Napier.d(tag = TAG_BOOKMARK_FTS) { "flatMapLatest routing to: ${route}" }
+                Napier.d(tag = TAG_BOOKMARK_FTS) { "flatMapLatest routing to: $route" }
                 when {
                     query.isNotBlank() && categoryId != null ->
                         bookmarkRepository.searchBookmarksByCategory(query, categoryId)
@@ -93,6 +93,21 @@ class BookmarkViewModel(
             }
             is BookmarkEvent.OnAddBookmarkClick -> {
                 navigationManager.showDialog(DialogDestination.BookmarkCreateCategory)
+            }
+            is BookmarkEvent.OnDeleteBookmarkClicked -> {
+                Napier.d(tag = TAG_BOOKMARK_FTS) { "OnDeleteBookmarkClicked — bookmark id=${event.bookmark.id}" }
+                updateState { copy(bookmarkToDelete = event.bookmark) }
+            }
+            is BookmarkEvent.ConfirmDeleteBookmark -> {
+                val bookmark = state.value.bookmarkToDelete ?: return
+                Napier.d(tag = TAG_BOOKMARK_FTS) { "ConfirmDeleteBookmark — deleting bookmark id=${bookmark.id}" }
+                viewModelScope.launch {
+                    bookmarkRepository.deleteBookmark(bookmark.id)
+                    updateState { copy(bookmarkToDelete = null) }
+                }
+            }
+            is BookmarkEvent.DismissDeleteBookmark -> {
+                updateState { copy(bookmarkToDelete = null) }
             }
             is BookmarkEvent.OnDeleteCategoryClicked -> {
                 updateState { copy(categoryToDelete = event.category) }

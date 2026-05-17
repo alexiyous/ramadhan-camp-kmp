@@ -11,6 +11,9 @@ sealed interface BookmarkEvent : UiEvent {
     data class OnCategorySelected(val categoryId: Long?) : BookmarkEvent
     data object OnAddBookmarkClick : BookmarkEvent
     data class OnBookmarkClick(val bookmark: Bookmark) : BookmarkEvent
+    data class OnDeleteBookmarkClicked(val bookmark: Bookmark) : BookmarkEvent
+    data object ConfirmDeleteBookmark : BookmarkEvent
+    data object DismissDeleteBookmark : BookmarkEvent
     data class OnDeleteCategoryClicked(val category: Category) : BookmarkEvent
     data object ConfirmDeleteCategory : BookmarkEvent
     data object DismissDeleteCategory : BookmarkEvent

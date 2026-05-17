@@ -1,4 +1,4 @@
-﻿package com.iqbalwork.ramadhancamp.feature.bookmark.presentation.components
+package com.iqbalwork.ramadhancamp.feature.bookmark.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -49,7 +50,8 @@ private fun getCategoryColor(categoryName: String, colors: com.iqbalwork.ramadha
 fun BookmarkCard(
     bookmark: Bookmark,
     categoryName: String,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onBookmarkClick: () -> Unit = {}
 ) {
     val colors = RamadhanTheme.colors
     val typography = RamadhanTheme.typography
@@ -108,13 +110,18 @@ fun BookmarkCard(
                     )
                 }
 
-                // Bookmark icon (green)
-                Icon(
-                    imageVector = Icons.Default.Bookmark,
-                    contentDescription = null,
-                    tint = colors.accentEmerald,
-                    modifier = Modifier.size(20.dp)
-                )
+                // Bookmark icon (tappable to delete)
+                IconButton(
+                    onClick = onBookmarkClick,
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Bookmark,
+                        contentDescription = "Hapus bookmark",
+                        tint = RamadhanTheme.colors.accentPrimary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
