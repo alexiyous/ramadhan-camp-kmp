@@ -1,4 +1,4 @@
-package com.iqbalwork.ramadhancamp.feature.bookmark.data.database.dao
+﻿package com.iqbalwork.ramadhancamp.feature.bookmark.data.database.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
@@ -21,6 +21,9 @@ interface BookmarkDao {
 
     @Query("SELECT * FROM category")
     fun getAllCategories(): Flow<List<CategoryEntity>>
+
+    @Query("SELECT * FROM category")
+    suspend fun getAllCategoriesList(): List<CategoryEntity>
 
     @Query("SELECT b.* FROM bookmark b WHERE b.id IN (SELECT rowid FROM bookmark_fts WHERE bookmark_fts MATCH :query)")
     fun searchBookmarks(query: String): Flow<List<BookmarkEntity>>

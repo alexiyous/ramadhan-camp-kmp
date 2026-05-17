@@ -1,4 +1,4 @@
-package com.iqbalwork.ramadhancamp.shared.common.database
+﻿package com.iqbalwork.ramadhancamp.shared.common.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
@@ -13,7 +13,7 @@ import com.iqbalwork.ramadhancamp.feature.bookmark.data.database.dao.BookmarkDao
         BookmarkFtsEntity::class,
         CategoryEntity::class
     ],
-    version = 3
+    version = 4
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun bookmarkDao(): BookmarkDao

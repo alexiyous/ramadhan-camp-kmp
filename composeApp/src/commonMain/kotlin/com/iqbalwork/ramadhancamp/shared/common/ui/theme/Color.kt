@@ -1,4 +1,4 @@
-package com.iqbalwork.ramadhancamp.shared.common.ui.theme
+﻿package com.iqbalwork.ramadhancamp.shared.common.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
@@ -39,5 +39,8 @@ internal val colorSuccess = Color(0xFF81C784)
 internal val colorInfo = Color(0xFF4FC3F7)
 
 // Category (Ayat Favorit)
-internal val categoryPurple = Color(0xFFA855F7)
+internal val categoryPurple = Color(0xFFB47AFF)  // adjusted for better contrast on dark bg
 internal val categoryAmber = Color(0xFFF59E0B)
+internal val categoryRose = Color(0xFFFB7185)
+internal val categorySky = Color(0xFF38BDF8)
+internal val categoryGoldBright = Color(0xFFFBBF24)

@@ -1,4 +1,4 @@
-package com.iqbalwork.ramadhancamp.shared.common.ui.theme
+﻿package com.iqbalwork.ramadhancamp.shared.common.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
@@ -37,6 +37,9 @@ data class RamadhanColorScheme(
     // Category
     val categoryPurple: Color,
     val categoryAmber: Color,
+    val categoryRose: Color,
+    val categorySky: Color,
+    val categoryGoldBright: Color,
 )
 
 internal val DarkColorScheme = RamadhanColorScheme(
@@ -67,6 +70,9 @@ internal val DarkColorScheme = RamadhanColorScheme(
     colorInfo = colorInfo,
     categoryPurple = categoryPurple,
     categoryAmber = categoryAmber,
+    categoryRose = categoryRose,
+    categorySky = categorySky,
+    categoryGoldBright = categoryGoldBright,
     bgSurfaceLight = bgSurfaceLight
 )
 
@@ -98,6 +104,9 @@ internal val LightColorScheme = RamadhanColorScheme(
     colorInfo = colorInfo,
     categoryPurple = categoryPurple,
     categoryAmber = categoryAmber,
+    categoryRose = categoryRose,
+    categorySky = categorySky,
+    categoryGoldBright = categoryGoldBright,
     bgSurfaceLight = bgSurfaceLight
 )
 

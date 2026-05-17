@@ -1,4 +1,4 @@
-﻿package com.iqbalwork.ramadhancamp.feature.quran.presentation
+package com.iqbalwork.ramadhancamp.feature.quran.presentation
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
@@ -195,11 +195,22 @@ private fun MainActionsContent(
                     style = typography.labelSmall,
                     color = colors.textSecondary
                 )
-                Text(
-                    text = state.bookmarkCategories.joinToString(", ") { it.name },
-                    style = typography.labelSmall,
-                    color = colors.accentPrimary
-                )
+                state.bookmarkCategories.forEachIndexed { index, category ->
+                    val categoryColor = Color(category.color)
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Box(
+                        modifier = Modifier
+                            .size(6.dp)
+                            .clip(CircleShape)
+                            .background(categoryColor)
+                    )
+                    Spacer(modifier = Modifier.width(2.dp))
+                    Text(
+                        text = if (index < state.bookmarkCategories.size - 1) "${category.name}," else category.name,
+                        style = typography.labelSmall,
+                        color = categoryColor
+                    )
+                }
             }
             Spacer(modifier = Modifier.height(16.dp))
         }
@@ -363,17 +374,17 @@ private fun RemovePlaylistCategoryRow(
             .clickable(onClick = onClick),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Folder icon in rounded square
+        val categoryColor = Color(category.color)
         Box(
             modifier = Modifier
                 .size(40.dp)
-                .background(colors.bgSurface, RoundedCornerShape(8.dp)),
+                .background(categoryColor.copy(alpha = 0.15f), RoundedCornerShape(8.dp)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Outlined.Folder,
                 contentDescription = null,
-                tint = colors.textPrimary,
+                tint = categoryColor,
                 modifier = Modifier.size(20.dp)
             )
         }
@@ -567,7 +578,7 @@ private fun PlaylistPickerContent(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // "Buat playlist baru" row — always visible at bottom
+            // "Buat playlist baru" row � always visible at bottom
             PlaylistCreateRow(
                 onClick = { action(QuranSheetEvent.OpenCreatePlaylist) }
             )
@@ -636,17 +647,17 @@ private fun PlaylistCategoryRow(
             .clickable(onClick = onClick),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Folder icon in rounded square
+        val categoryColor = Color(category.color)
         Box(
             modifier = Modifier
                 .size(40.dp)
-                .background(colors.bgSurface, RoundedCornerShape(8.dp)),
+                .background(categoryColor.copy(alpha = 0.15f), RoundedCornerShape(8.dp)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Outlined.Folder,
                 contentDescription = null,
-                tint = colors.textPrimary,
+                tint = categoryColor,
                 modifier = Modifier.size(20.dp)
             )
         }

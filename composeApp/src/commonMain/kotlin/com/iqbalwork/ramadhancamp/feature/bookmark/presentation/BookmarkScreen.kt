@@ -1,4 +1,4 @@
-package com.iqbalwork.ramadhancamp.feature.bookmark.presentation
+﻿package com.iqbalwork.ramadhancamp.feature.bookmark.presentation
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -234,7 +234,8 @@ fun BookmarkContent(
                         CategoryChip(
                             name = "Semua",
                             isSelected = state.selectedCategoryId == null,
-                            onClick = { action(BookmarkEvent.OnCategorySelected(null)) }
+                            onClick = { action(BookmarkEvent.OnCategorySelected(null)) },
+                            color = 0xFF4ADE80L
                         )
                     }
                     items(state.categories) { category ->
@@ -243,7 +244,8 @@ fun BookmarkContent(
                                 name = category.name,
                                 isSelected = state.selectedCategoryId == category.id,
                                 onClick = { action(BookmarkEvent.OnCategorySelected(category.id)) },
-                                onLongClick = { action(BookmarkEvent.OnDeleteCategoryClicked(category)) }
+                                onLongClick = { action(BookmarkEvent.OnDeleteCategoryClicked(category)) },
+                                color = category.color
                             )
                         }
                     }
@@ -289,9 +291,11 @@ fun BookmarkContent(
                         modifier = Modifier.fillMaxSize()
                     ) {
                         items(state.bookmarks) { bookmark ->
+                            val category = state.categories.find { it.id == bookmark.categoryId }
                             BookmarkCard(
                                 bookmark = bookmark,
-                                categoryName = state.categories.find { it.id == bookmark.categoryId }?.name ?: "Unknown",
+                                categoryName = category?.name ?: "Unknown",
+                                categoryColor = category?.color ?: 0xFF4ADE80L,
                                 onClick = { action(BookmarkEvent.OnBookmarkClick(bookmark)) },
                                 onBookmarkClick = { action(BookmarkEvent.OnDeleteBookmarkClicked(bookmark)) }
                             )

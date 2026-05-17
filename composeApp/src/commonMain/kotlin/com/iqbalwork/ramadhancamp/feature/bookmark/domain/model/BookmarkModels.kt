@@ -1,8 +1,9 @@
-package com.iqbalwork.ramadhancamp.feature.bookmark.domain.model
+﻿package com.iqbalwork.ramadhancamp.feature.bookmark.domain.model
 
 data class Category(
     val id: Long,
-    val name: String
+    val name: String,
+    val color: Long = 0xFF4ADE80L
 )
 
 data class Bookmark(
