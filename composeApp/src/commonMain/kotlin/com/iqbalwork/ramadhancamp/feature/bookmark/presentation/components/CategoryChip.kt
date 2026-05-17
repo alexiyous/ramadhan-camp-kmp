@@ -2,7 +2,6 @@
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
@@ -11,7 +10,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.iqbalwork.ramadhancamp.shared.common.ui.theme.RamadhanTheme
 
@@ -26,17 +24,13 @@ fun CategoryChip(
     val colors = RamadhanTheme.colors
     val typography = RamadhanTheme.typography
 
-    val backgroundColor = if (isSelected) colors.accentPrimary else Color.Transparent
-    val contentColor = if (isSelected) colors.textOnLight else colors.textPrimary
-    val modifier = if (isSelected) {
-        Modifier.background(backgroundColor, RoundedCornerShape(16.dp))
-    } else {
-        Modifier.border(1.dp, colors.divider, RoundedCornerShape(16.dp))
-    }
+    val backgroundColor = if (isSelected) colors.bgSurface else colors.bgSecondary
+    val contentColor = if (isSelected) colors.textPrimary else colors.textMuted
 
     Box(
-        modifier = modifier
+        modifier = Modifier
             .clip(RoundedCornerShape(16.dp))
+            .background(backgroundColor)
             .combinedClickable(
                 onClick = onClick,
                 onLongClick = onLongClick

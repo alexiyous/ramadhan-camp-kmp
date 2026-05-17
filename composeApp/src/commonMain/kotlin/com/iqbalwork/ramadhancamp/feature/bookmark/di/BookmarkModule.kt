@@ -22,8 +22,7 @@ val bookmarkModule = module {
             navigationManager = get<NavigationManager> {
                 parametersOf(params.get<BackStackNode>(), params.get<TabState>())
             },
-            bookmarkRepository = get(),
-            audioController = get()
+            bookmarkRepository = get()
         )
     }
 }

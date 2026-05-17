@@ -9,6 +9,7 @@ const val TAG_NAVIGATION_RESULT_CANCEL = "NAVIGATION_RESULT_CANCEL"
 const val TAG_AUTH_STATE = "AUTH_STATE"
 const val TAG_DEEPLINK = "DEEPLINK"
 const val TAG_PUSH = "PUSH"
+const val TAG_BOOKMARK_FTS = "BOOKMARK_FTS"
 
 fun initLogging() {
     Napier.base(DebugAntilog())
