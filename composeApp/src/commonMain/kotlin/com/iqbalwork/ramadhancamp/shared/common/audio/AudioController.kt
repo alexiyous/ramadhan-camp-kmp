@@ -91,5 +91,7 @@ class AudioController {
     fun reset() {
         stop()
         _isBuffering.value = false
+        _totalTimeMs.value = 0L
+        _isPlaying.value = false
     }
 }

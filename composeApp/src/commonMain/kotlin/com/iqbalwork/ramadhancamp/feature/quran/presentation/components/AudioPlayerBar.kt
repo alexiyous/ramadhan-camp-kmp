@@ -28,6 +28,7 @@ import kotlin.math.abs
 @Composable
 fun AudioPlayerBar(
     surahName: String,
+    ayatNumber: Int,
     reciterName: String,
     currentTimeMs: Long,
     totalDurationMs: Long,
@@ -37,6 +38,7 @@ fun AudioPlayerBar(
     onPlayPause: () -> Unit,
     onNext: (() -> Unit)? = null,
     onPrev: (() -> Unit)? = null,
+    onClose: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val colors = RamadhanTheme.colors
@@ -80,13 +82,17 @@ fun AudioPlayerBar(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = if (isBuffering) "Buffering..." else "Now Playing",
+                    text = when {
+                        isBuffering -> "Buffering..."
+                        !isPlaying -> "Paused"
+                        else -> "Now Playing"
+                    },
                     style = typography.labelSmall,
-                    color = if (isBuffering) colors.textMuted else colors.accentGold
+                    color = if (isPlaying && !isBuffering) colors.accentGold else colors.textMuted
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = surahName,
+                    text = "$surahName - Ayat $ayatNumber",
                     style = typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
                     color = colors.textPrimary,
                     maxLines = 1
@@ -98,6 +104,15 @@ fun AudioPlayerBar(
                     maxLines = 1
                 )
             }
+
+            Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = "Close",
+                tint = colors.textMuted,
+                modifier = Modifier
+                    .size(24.dp)
+                    .clickable { onClose() }
+            )
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,

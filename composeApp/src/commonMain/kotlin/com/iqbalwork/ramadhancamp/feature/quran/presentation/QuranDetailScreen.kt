@@ -12,6 +12,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import com.iqbalwork.ramadhancamp.feature.quran.presentation.components.AudioPlayerBar
 import com.iqbalwork.ramadhancamp.feature.quran.presentation.components.AyatCard
 import com.iqbalwork.ramadhancamp.feature.quran.presentation.model.QuranDetailEvent
@@ -26,10 +28,14 @@ import chaintech.videoplayer.ui.audio.AudioPlayer
 import com.iqbalwork.ramadhancamp.shared.common.ui.components.loading.Loader
 import com.iqbalwork.ramadhancamp.shared.common.ui.components.snackbar.RamadhanSnackBarHost
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import com.iqbalwork.ramadhancamp.shared.common.ui.components.error.RamadhanErrorEmptyState
 import com.iqbalwork.ramadhancamp.shared.common.ui.components.error.toErrorEmptyState
 import com.iqbalwork.ramadhancamp.shared.common.ui.components.error.ErrorEmptyState
-import io.github.aakira.napier.log
 
 private sealed interface QuranDetailAnimState {
     data object Loading : QuranDetailAnimState
@@ -68,6 +74,13 @@ fun QuranDetailContent(state: QuranDetailState, action: (QuranDetailEvent) -> Un
         onDispose {
             action(QuranDetailEvent.OnScreenDispose)
         }
+    }
+
+    LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) {
+        action(QuranDetailEvent.OnAppPause)
+    }
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        action(QuranDetailEvent.OnAppResume)
     }
 
     // Pre-load next ayat audio to warm the network cache
@@ -176,9 +189,15 @@ fun QuranDetailContent(state: QuranDetailState, action: (QuranDetailEvent) -> Un
                     }
 
 
-                    if (state.playingAyat != null) {
+                    AnimatedVisibility(
+                        modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 16.dp),
+                        visible = state.playingAyat != null,
+                        enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
+                        exit = slideOutVertically(targetOffsetY = { it }) + fadeOut()
+                    ) {
                         AudioPlayerBar(
                             surahName = state.surahDetail?.namaLatin ?: "",
+                            ayatNumber = state.playingAyat?.nomorAyat ?: 0,
                             reciterName = "Misyari Rasyid",
                             isPlaying = state.isPlaying,
                             isBuffering = state.isBuffering,
@@ -188,7 +207,8 @@ fun QuranDetailContent(state: QuranDetailState, action: (QuranDetailEvent) -> Un
                             onPlayPause = { action(QuranDetailEvent.TogglePlayPause) },
                             onNext = { action(QuranDetailEvent.PlayNextAyat) },
                             onPrev = { action(QuranDetailEvent.PlayPrevAyat) },
-                            modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 16.dp)
+                            onClose = { action(QuranDetailEvent.StopAudio) },
+                            modifier = Modifier.align(Alignment.BottomCenter)
                         )
                     }
                 }
