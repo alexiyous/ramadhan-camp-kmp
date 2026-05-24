@@ -5,14 +5,17 @@ import com.iqbalwork.ramadhancamp.feature.bookmark.domain.repository.BookmarkRep
 import com.iqbalwork.ramadhancamp.feature.bookmark.presentation.model.BookmarkEffect
 import com.iqbalwork.ramadhancamp.feature.bookmark.presentation.model.BookmarkEvent
 import com.iqbalwork.ramadhancamp.feature.bookmark.presentation.model.BookmarkState
-import com.iqbalwork.ramadhancamp.feature.quran.presentation.QuranDetailScreenParameters
 import com.iqbalwork.ramadhancamp.feature.quran.presentation.route.QuranTab
 import com.iqbalwork.ramadhancamp.shared.common.navigation.DialogDestination
+import com.iqbalwork.ramadhancamp.shared.common.navigation.LastSurahNavigationData
 import com.iqbalwork.ramadhancamp.shared.common.navigation.NavigationManager
-import com.iqbalwork.ramadhancamp.shared.common.navigation.TabDestination
+import com.iqbalwork.ramadhancamp.shared.common.navigation.NavigationResult
 import com.iqbalwork.ramadhancamp.shared.common.ui.BaseViewModel
+import com.iqbalwork.ramadhancamp.shared.utils.TAG_BOOKMARK_FTS
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
@@ -22,8 +25,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import com.iqbalwork.ramadhancamp.shared.utils.TAG_BOOKMARK_FTS
-import io.github.aakira.napier.Napier
 
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 class BookmarkViewModel(
@@ -128,14 +129,15 @@ class BookmarkViewModel(
             is BookmarkEvent.OnBookmarkClick -> {
                 val bookmark = event.bookmark
                 navigationManager.switchTab(QuranTab)
-                navigationManager.navigateToInsideTab(
-                    TabDestination.QuranDetail(
-                        QuranDetailScreenParameters(
-                            surahId = bookmark.surahId,
-                            scrollToAyat = bookmark.ayatNumber
+                viewModelScope.launch {
+                    delay(300)
+                    navigationManager.sendResult(
+                        NavigationResult.Success(
+                            "navigate_to_bookmark_ayah",
+                            LastSurahNavigationData(bookmark.surahId, bookmark.ayatNumber)
                         )
                     )
-                )
+                }
             }
             is BookmarkEvent.OnBackClicked -> {
                 navigationManager.back()

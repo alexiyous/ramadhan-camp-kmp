@@ -1,4 +1,4 @@
-package com.iqbalwork.ramadhancamp.shared.common.ui
+﻿package com.iqbalwork.ramadhancamp.shared.common.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -52,8 +52,10 @@ abstract class BaseViewModel<Params: UiParams, State : Any, Event : UiEvent, Eff
         }
         resultKeys.forEach { key ->
             viewModelScope.launch {
+                log(tag = "CACHE") { "SUB RESULT TO KEY $key" }
                 navigationManager.subscribeToResult(key)
                     .collect {
+                        log(tag = "CACHE") { "RESULT ${it.key}" }
                         handleNavigationResult(it)
                     }
             }
@@ -93,7 +95,7 @@ abstract class BaseViewModel<Params: UiParams, State : Any, Event : UiEvent, Eff
             "onDispose $this"
         }
         resultKeys.forEach { key ->
-            navigationManager.removeKey(key)
+            navigationManager.releaseKey(key)
         }
         super.onCleared()
     }
@@ -160,3 +162,4 @@ internal fun <Effect : UiEffect> BaseViewModel<*, *, *, Effect>.UiEffect(
         }
     }
 }
+
