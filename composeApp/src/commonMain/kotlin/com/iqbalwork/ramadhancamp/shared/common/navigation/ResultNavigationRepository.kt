@@ -1,4 +1,4 @@
-package com.iqbalwork.ramadhancamp.shared.common.navigation
+﻿package com.iqbalwork.ramadhancamp.shared.common.navigation
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -21,12 +21,21 @@ sealed class NavigationResult(val key: String) {
 class ResultNavigationRepository(
     private val coroutineScope: CoroutineScope,
 ) {
-    private val resultsFlow = mutableMapOf<String, MutableSharedFlow<NavigationResult>>()
+    private data class FlowEntry(
+        val flow: MutableSharedFlow<NavigationResult>,
+        var refCount: Int = 0
+    )
 
+    private val resultsFlow = mutableMapOf<String, FlowEntry>()
+
+    /**
+     * Returns the SharedFlow for the given key, creating one if it doesn't exist.
+     * Increments the reference count to track active subscribers.
+     */
     fun getResultFlow(key: String): SharedFlow<NavigationResult> {
-        return resultsFlow.getOrPut(key) {
-            MutableSharedFlow()
-        }.asSharedFlow()
+        val entry = resultsFlow.getOrPut(key) { FlowEntry(MutableSharedFlow()) }
+        entry.refCount++
+        return entry.flow.asSharedFlow()
     }
 
     fun sendResult(
@@ -34,12 +43,23 @@ class ResultNavigationRepository(
         data: NavigationResult,
     ) {
         coroutineScope.launch {
-            resultsFlow[key]?.emit(data)
+            resultsFlow[key]?.flow?.emit(data)
         }
     }
 
-    fun removeKey(key: String) {
-        resultsFlow.remove(key)
+    /**
+     * Decrements the reference count for the given key.
+     * Removes the flow from the map only when refCount reaches zero,
+     * meaning no ViewModel is actively collecting from it anymore.
+     * This prevents the race condition where a new subscriber's collector
+     * is orphaned when the old subscriber's onCleared removes the shared flow.
+     */
+    fun releaseKey(key: String) {
+        val entry = resultsFlow[key] ?: return
+        entry.refCount--
+        if (entry.refCount <= 0) {
+            resultsFlow.remove(key)
+        }
     }
 }
 

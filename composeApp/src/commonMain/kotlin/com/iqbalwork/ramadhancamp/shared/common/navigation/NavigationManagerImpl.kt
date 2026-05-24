@@ -1,4 +1,4 @@
-package com.iqbalwork.ramadhancamp.shared.common.navigation
+﻿package com.iqbalwork.ramadhancamp.shared.common.navigation
 
 import androidx.navigation3.runtime.NavKey
 import io.github.aakira.napier.log
@@ -33,7 +33,10 @@ class NavigationManagerImpl(
 
     override fun back(navigationResult: NavigationResult?) {
         val node = currentNode
-        navigationResult?.let { sendResult(it) }
+        navigationResult?.let {
+            log(tag = "CACHE") { "Back with result: ${it.key}" }
+            sendResult(it)
+        }
         if (node.backStack.size > 1) {
             node.backStack.removeLast()
         } else {
@@ -71,7 +74,8 @@ class NavigationManagerImpl(
         return resultRepository.getResultFlow(key)
     }
 
-    override fun removeKey(key: String) {
-        resultRepository.removeKey(key)
+    override fun releaseKey(key: String) {
+        resultRepository.releaseKey(key)
     }
 }
+

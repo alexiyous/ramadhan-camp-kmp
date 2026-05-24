@@ -157,6 +157,7 @@ class QuranDetailViewModel(
     override fun handleEvent(event: QuranDetailEvent) {
         when (event) {
             is QuranDetailEvent.PlayAudio -> {
+                log(tag = "CACHE") { "PLAY" }
                 pendingSeekMs = null
                 val ayatList = state.value.surahDetail?.ayat ?: return
                 val index = ayatList.indexOf(event.ayat)
@@ -369,13 +370,15 @@ class QuranDetailViewModel(
     }
 
     override fun navigationResultSuccess(key: String, data: NavigationResultData?) {
+        log(tag = "CACHE") { "Unknown navigation result key: $key" }
         when (key) {
             "quran_sheet_play" -> {
+                log(tag = "CACHE") { "PLAY FROM SHEET" }
                 val ayatNumber = (data as? AyatNumberResult)?.ayatNumber ?: return
                 val ayat = state.value.surahDetail?.ayat?.find { it.nomorAyat == ayatNumber } ?: return
                 handleEvent(QuranDetailEvent.PlayAudio(ayat))
             }
-            else -> super.navigationResultSuccess(key, data)
+            else ->         log(tag = "CACHE") { "Unknown navigation result key: $key" }
         }
     }
 }

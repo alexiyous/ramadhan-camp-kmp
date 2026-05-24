@@ -1,4 +1,4 @@
-package com.iqbalwork.ramadhancamp.shared.common.navigation
+﻿package com.iqbalwork.ramadhancamp.shared.common.navigation
 
 import androidx.compose.runtime.State
 import androidx.navigation3.runtime.NavKey
@@ -15,5 +15,5 @@ interface NavigationManager {
     fun hideDialog()
     fun sendResult(value: NavigationResult)
     fun subscribeToResult(key: String): SharedFlow<NavigationResult>
-    fun removeKey(key: String)
+    fun releaseKey(key: String)
 }

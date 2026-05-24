@@ -15,6 +15,7 @@ import com.iqbalwork.ramadhancamp.shared.common.ui.BaseViewModel
 import com.iqbalwork.ramadhancamp.shared.common.utils.ShareManager
 import com.iqbalwork.ramadhancamp.shared.utils.TAG_BOOKMARK_FTS
 import io.github.aakira.napier.Napier
+import io.github.aakira.napier.log
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
@@ -93,6 +94,7 @@ class QuranSheetViewModel(
     override fun handleEvent(event: QuranSheetEvent) {
         when (event) {
             is QuranSheetEvent.PlayAudio -> {
+                log(tag = "CACHE") { "play audio is called from sheet" }
                 navigationManager.back(
                     NavigationResult.Success(
                         key = "quran_sheet_play",
