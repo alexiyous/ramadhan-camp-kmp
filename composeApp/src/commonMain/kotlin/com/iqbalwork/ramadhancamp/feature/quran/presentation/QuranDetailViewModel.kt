@@ -4,6 +4,9 @@ import androidx.lifecycle.viewModelScope
 import com.iqbalwork.ramadhancamp.feature.bookmark.domain.repository.BookmarkRepository
 import com.iqbalwork.ramadhancamp.feature.home.domain.model.LastSurahRead
 import com.iqbalwork.ramadhancamp.feature.home.domain.usecase.UpdateLastSurahRead
+import com.iqbalwork.ramadhancamp.feature.quran.domain.model.SurahDetail
+import com.iqbalwork.ramadhancamp.feature.quran.domain.repository.AudioCheckpoint
+import com.iqbalwork.ramadhancamp.feature.quran.domain.repository.AudioCheckpointRepository
 import com.iqbalwork.ramadhancamp.feature.quran.domain.repository.QuranRepository
 import com.iqbalwork.ramadhancamp.feature.quran.presentation.model.QuranDetailEffect
 import com.iqbalwork.ramadhancamp.feature.quran.presentation.model.QuranDetailEvent
@@ -22,11 +25,14 @@ import com.iqbalwork.ramadhancamp.shared.common.utils.AppError
 import com.iqbalwork.ramadhancamp.shared.common.utils.date.getCurrentDateLocalized
 import com.iqbalwork.ramadhancamp.shared.utils.TAG_BOOKMARK_FTS
 import io.github.aakira.napier.Napier
+import io.github.aakira.napier.log
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 import ramadhancamp.composeapp.generated.resources.Res
 import ramadhancamp.composeapp.generated.resources.image_danger_error
 
@@ -38,6 +44,7 @@ class QuranDetailViewModel(
     private val updateLastSurahRead: UpdateLastSurahRead,
     private val audioController: AudioController,
     private val bookmarkRepository: BookmarkRepository,
+    private val audioCheckpointRepo: AudioCheckpointRepository,
 ) : BaseViewModel<QuranDetailScreenParameters, QuranDetailState, QuranDetailEvent, QuranDetailEffect>(
     params, QuranDetailState(), navigationManager,
     resultKeys = arrayOf("quran_sheet_play")
@@ -47,11 +54,13 @@ class QuranDetailViewModel(
 
 
     private var pendingSeekMs: Long? = null
+    private var savedAyatNumber: Int? = null
 
     init {
         observeAudioState()
         loadSurahDetail()
         observeBookmarkStatus()
+        observeAudioCheckpoint()
     }
 
     private fun observeBookmarkStatus() {
@@ -61,6 +70,23 @@ class QuranDetailViewModel(
                 val ayatNumbers = bookmarks.map { it.ayatNumber }.toSet()
                 Napier.d(tag = TAG_BOOKMARK_FTS) { "Bookmarked ayat numbers for surah ${params.surahId}: $ayatNumbers" }
                 updateState { copy(bookmarkedAyatNumbers = ayatNumbers) }
+            }
+            .launchIn(viewModelScope)
+    }
+
+    private fun observeAudioCheckpoint() {
+        audioCheckpointRepo.getCheckpoint(params.surahId)
+            .distinctUntilChanged()
+            .onEach { checkpoint ->
+                if (checkpoint != null) {
+                    savedAyatNumber = checkpoint.ayatNumber
+                    pendingSeekMs = checkpoint.seekPositionMs
+                    updateState { copy(currentTimeMs = pendingSeekMs!!) }
+                    // If surahDetail is already loaded, restore immediately
+                    state.value.surahDetail?.let { detail ->
+                        restorePlayingAyatIfNeeded(detail)
+                    }
+                }
             }
             .launchIn(viewModelScope)
     }
@@ -81,6 +107,7 @@ class QuranDetailViewModel(
         }.launchIn(viewModelScope)
 
         audioController.isBuffering.onEach { isBuffering ->
+            log(tag = "CACHE") { "is buffering  = $isBuffering" }
             updateState { copy(isBuffering = isBuffering) }
         }.launchIn(viewModelScope)
 
@@ -96,7 +123,7 @@ class QuranDetailViewModel(
                     updateState { copy(isPlaying = false, currentTimeMs = 0L) }
                 }
             } else {
-                audioController.stop()
+                audioController.reset()
                 updateState { copy(isPlaying = false, currentTimeMs = 0L) }
             }
         }.launchIn(viewModelScope)
@@ -108,10 +135,22 @@ class QuranDetailViewModel(
             quranRepository.getSurahDetail(params.surahId)
                 .onSuccess { detail ->
                     updateState { copy(isLoading = false, surahDetail = detail) }
+                    restorePlayingAyatIfNeeded(detail)
                 }
                 .onFailure {
                     updateState { copy(isLoading = false, appError = it as? AppError ?: AppError.UnexpectedError("Unknown error", it)) }
                 }
+        }
+    }
+
+    private fun restorePlayingAyatIfNeeded(detail: SurahDetail) {
+        val ayatNumber = savedAyatNumber ?: return
+        savedAyatNumber = null
+        val ayat = detail.ayat.find { it.nomorAyat == ayatNumber }
+        if (ayat != null) {
+            updateState { copy(playingAyat = ayat) }
+            audioController.loadUrl(ayat.audioUrl)
+            // isPlaying remains false — user must press play manually
         }
     }
 
@@ -160,8 +199,11 @@ class QuranDetailViewModel(
                 }
             }
             is QuranDetailEvent.StopAudio -> {
-                audioController.stop()
-                updateState { copy(playingAyat = null) }
+                audioController.reset()
+                updateState { copy(playingAyat = null, isPlaying = false, currentTimeMs = 0L, totalTimeMs = 0L) }
+                viewModelScope.launch {
+                    audioCheckpointRepo.deleteCheckpoint(params.surahId)
+                }
             }
             is QuranDetailEvent.TogglePlayPause -> {
                 if (state.value.isPlaying) {
@@ -269,9 +311,47 @@ class QuranDetailViewModel(
             is QuranDetailEvent.Retry -> {
                 loadSurahDetail()
             }
+            is QuranDetailEvent.OnAppPause -> {
+                val currentState = state.value
+                if (currentState.playingAyat != null) {
+                    pendingSeekMs = currentState.currentTimeMs
+                }
+                if (currentState.isPlaying) {
+                    audioController.pause()
+                }
+                // Persist checkpoint to Room for process-death survival
+                currentState.playingAyat?.let { ayat ->
+                    viewModelScope.launch {
+                        audioCheckpointRepo.saveCheckpoint(
+                            AudioCheckpoint(
+                                surahId = params.surahId,
+                                ayatNumber = ayat.nomorAyat,
+                                seekPositionMs = pendingSeekMs ?: 0L,
+                                timestamp = Clock.System.now().toEpochMilliseconds()
+                            )
+                        )
+                    }
+                }
+            }
+            is QuranDetailEvent.OnAppResume -> {
+                // Room is the source of truth — nothing ephemeral to clear.
+                // If playingAyat != null, wait for user to press play.
+            }
             is QuranDetailEvent.OnScreenDispose -> {
-                pendingSeekMs = pendingSeekMs ?: state.value.currentTimeMs
+                pendingSeekMs = state.value.currentTimeMs
                 audioController.pause()
+                state.value.playingAyat?.let { ayat ->
+                    viewModelScope.launch {
+                        audioCheckpointRepo.saveCheckpoint(
+                            AudioCheckpoint(
+                                surahId = params.surahId,
+                                ayatNumber = ayat.nomorAyat,
+                                seekPositionMs = pendingSeekMs ?: 0L,
+                                timestamp = Clock.System.now().toEpochMilliseconds()
+                            )
+                        )
+                    }
+                }
             }
             is QuranDetailEvent.OnScreenResume -> {
                 // If playingAyat != null, we just wait for user to click play

@@ -33,6 +33,8 @@ sealed interface QuranDetailEvent : UiEvent {
     data object Back : QuranDetailEvent
     data class AudioError(val message: String) : QuranDetailEvent
     data object Retry : QuranDetailEvent
+    data object OnAppPause : QuranDetailEvent
+    data object OnAppResume : QuranDetailEvent
     data object OnScreenDispose : QuranDetailEvent
     data object OnScreenResume : QuranDetailEvent
     data class OnSeekAudio(val positionMs: Long) : QuranDetailEvent
