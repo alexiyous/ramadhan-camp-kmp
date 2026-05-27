@@ -24,6 +24,8 @@ import com.iqbalwork.ramadhancamp.feature.bookmark.domain.repository.BookmarkRep
 import com.iqbalwork.ramadhancamp.shared.common.navigation.LocalBackStackNode
 import com.iqbalwork.ramadhancamp.shared.common.navigation.LocalCurrentTab
 import com.iqbalwork.ramadhancamp.shared.common.navigation.NavigationManager
+import com.iqbalwork.ramadhancamp.shared.common.ui.components.button.RamadhanButton
+import com.iqbalwork.ramadhancamp.shared.common.ui.components.button.RamadhanButtonProps
 import com.iqbalwork.ramadhancamp.shared.common.ui.theme.RamadhanTheme
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
@@ -67,7 +69,7 @@ fun BookmarkCreateCategorySheet() {
             singleLine = true
         )
         Spacer(modifier = Modifier.height(24.dp))
-        Button(
+        RamadhanButton(
             onClick = {
                 val name = categoryName.trim()
                 if (name.isNotEmpty()) {
@@ -78,15 +80,10 @@ fun BookmarkCreateCategorySheet() {
                 }
             },
             modifier = Modifier.fillMaxWidth(),
-            enabled = categoryName.trim().isNotEmpty(),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = colors.accentPrimary,
-                contentColor = colors.textOnLight
-            ),
-            shape = RoundedCornerShape(12.dp)
-        ) {
-            Text("Save", style = typography.labelLarge)
-        }
+            variant = RamadhanButtonProps.Variant.Primary,
+            text = "Save",
+            enabled = categoryName.trim().isNotEmpty()
+        )
         Spacer(modifier = Modifier.height(24.dp))
     }
 }

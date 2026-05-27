@@ -1,6 +1,7 @@
 package com.iqbalwork.ramadhancamp.shared.common.ui.components.button
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -44,6 +45,7 @@ fun RamadhanButton(
         modifier = modifier.height(size.height),
         enabled = enabled,
         shape = size.shape,
+        border = if (variant == RamadhanButtonProps.Variant.Outline) BorderStroke(1.dp, RamadhanTheme.colors.divider) else null,
         onClick = debounced {
             if (!isProgress) { onClick.invoke() }
         },
@@ -172,6 +174,18 @@ private fun buttonColors(variant: RamadhanButtonProps.Variant): ButtonColors {
             disabledContentColor = RamadhanTheme.colors.textMuted,
             disabledContainerColor = RamadhanTheme.colors.bgContentSecondary,
         )
+        RamadhanButtonProps.Variant.Ghost -> ButtonColors(
+            containerColor = Color.Transparent,
+            contentColor = RamadhanTheme.colors.textMuted,
+            disabledContentColor = RamadhanTheme.colors.textMuted.copy(alpha = 0.5f),
+            disabledContainerColor = Color.Transparent,
+        )
+        RamadhanButtonProps.Variant.Outline -> ButtonColors(
+            containerColor = Color.Transparent,
+            contentColor = RamadhanTheme.colors.textPrimary,
+            disabledContentColor = RamadhanTheme.colors.textMuted,
+            disabledContainerColor = Color.Transparent,
+        )
     }
 }
 
@@ -182,6 +196,8 @@ private fun loaderColor(variant: RamadhanButtonProps.Variant): Color {
         RamadhanButtonProps.Variant.Secondary -> RamadhanTheme.colors.accentPrimary
         RamadhanButtonProps.Variant.Tertiary -> RamadhanTheme.colors.accentPrimary
         RamadhanButtonProps.Variant.Danger -> RamadhanTheme.colors.colorDanger
+        RamadhanButtonProps.Variant.Ghost -> RamadhanTheme.colors.textMuted
+        RamadhanButtonProps.Variant.Outline -> RamadhanTheme.colors.textPrimary
     }
 }
 
@@ -196,6 +212,8 @@ object RamadhanButtonProps {
         Secondary,
         Tertiary,
         Danger,
+        Ghost,
+        Outline
     }
 
     enum class Size(

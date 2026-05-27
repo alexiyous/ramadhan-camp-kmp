@@ -1,4 +1,4 @@
-package com.iqbalwork.ramadhancamp.feature.bookmark.presentation
+﻿package com.iqbalwork.ramadhancamp.feature.bookmark.presentation
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SharedTransitionLayout
@@ -29,7 +29,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material3.AlertDialog
+import com.iqbalwork.ramadhancamp.shared.common.ui.components.dialog.RamadhanAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -56,6 +56,8 @@ import com.iqbalwork.ramadhancamp.feature.bookmark.presentation.components.Categ
 import com.iqbalwork.ramadhancamp.feature.bookmark.presentation.model.BookmarkEvent
 import com.iqbalwork.ramadhancamp.feature.bookmark.presentation.model.BookmarkState
 import com.iqbalwork.ramadhancamp.shared.common.extension.rememberViewModel
+import com.iqbalwork.ramadhancamp.shared.common.ui.components.button.RamadhanButton
+import com.iqbalwork.ramadhancamp.shared.common.ui.components.button.RamadhanButtonProps
 import com.iqbalwork.ramadhancamp.shared.common.ui.rememberDispatch
 import com.iqbalwork.ramadhancamp.shared.common.ui.theme.RamadhanTheme
 
@@ -90,82 +92,29 @@ fun BookmarkContent(
     // Delete category confirmation dialog
     val categoryToDelete = state.categoryToDelete
     if (categoryToDelete != null) {
-        AlertDialog(
-            onDismissRequest = { action(BookmarkEvent.DismissDeleteCategory) },
-            containerColor = colors.bgSecondary,
-            titleContentColor = colors.textPrimary,
-            textContentColor = colors.textSecondary,
-            title = {
-                Text(
-                    text = "Delete Category?",
-                    style = typography.headlineSmall,
-                    color = colors.textPrimary
-                )
-            },
-            text = {
-                Text(
-                    text = "All saved bookmarks inside this category will be deleted.",
-                    style = typography.bodyLarge,
-                    color = colors.textSecondary
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = { action(BookmarkEvent.ConfirmDeleteCategory) },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = colors.accentEmerald,
-                        contentColor = colors.textOnLight
-                    )
-                ) {
-                    Text("Delete", style = typography.labelLarge)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { action(BookmarkEvent.DismissDeleteCategory) }) {
-                    Text("Cancel", color = colors.textMuted, style = typography.labelLarge)
-                }
-            }
+        RamadhanAlertDialog(
+            onDismiss = { action(BookmarkEvent.DismissDeleteCategory) },
+            onConfirm = { action(BookmarkEvent.ConfirmDeleteCategory) },
+            title = "Delete Category?",
+            text = "All saved bookmarks inside this category will be deleted.",
+            confirmButtonText = "Delete",
+            confirmButtonVariant = RamadhanButtonProps.Variant.Danger,
+            dismissButtonText = "Cancel",
+            dismissButtonVariant = RamadhanButtonProps.Variant.Ghost
         )
     }
 
     // Delete bookmark confirmation dialog
     if (state.bookmarkToDelete != null) {
-        AlertDialog(
-            onDismissRequest = { action(BookmarkEvent.DismissDeleteBookmark) },
-            title = {
-                Text(
-                    text = "Hapus Bookmark?",
-                    style = typography.headlineSmall,
-                    color = colors.textPrimary
-                )
-            },
-            text = {
-                Text(
-                    text = "Bookmark untuk ayat ini akan dihapus.",
-                    style = typography.bodyLarge,
-                    color = colors.textSecondary
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = { action(BookmarkEvent.ConfirmDeleteBookmark) },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = colors.accentPrimary
-                    )
-                ) {
-                    Text("Hapus", color = colors.textOnLight)
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = { action(BookmarkEvent.DismissDeleteBookmark) }
-                ) {
-                    Text("Batal", color = colors.textMuted)
-                }
-            },
-            containerColor = colors.bgSecondary,
-            titleContentColor = colors.textPrimary,
-            textContentColor = colors.textSecondary
+        RamadhanAlertDialog(
+            onDismiss = { action(BookmarkEvent.DismissDeleteBookmark) },
+            onConfirm = { action(BookmarkEvent.ConfirmDeleteBookmark) },
+            title = "Hapus Bookmark?",
+            text = "Bookmark untuk ayat ini akan dihapus.",
+            confirmButtonText = "Hapus",
+            confirmButtonVariant = RamadhanButtonProps.Variant.Danger,
+            dismissButtonText = "Batal",
+            dismissButtonVariant = RamadhanButtonProps.Variant.Ghost
         )
     }
 
@@ -262,15 +211,14 @@ fun BookmarkContent(
                             )
                         }
                         items(state.categories) { category ->
-                            Box {
-                                CategoryChip(
-                                    name = category.name,
-                                    isSelected = state.selectedCategoryId == category.id,
-                                    onClick = { action(BookmarkEvent.OnCategorySelected(category.id)) },
-                                    onLongClick = { action(BookmarkEvent.OnDeleteCategoryClicked(category)) },
-                                    color = category.color
-                                )
-                            }
+                            CategoryChip(
+                                name = category.name,
+                                isSelected = state.selectedCategoryId == category.id,
+                                onClick = { action(BookmarkEvent.OnCategorySelected(category.id)) },
+                                onLongClick = { action(BookmarkEvent.OnDeleteCategoryClicked(category)) },
+                                onDeleteClick = { action(BookmarkEvent.OnDeleteCategoryClicked(category)) },
+                                color = category.color
+                            )
                         }
                     }
 
@@ -290,7 +238,7 @@ fun BookmarkContent(
                                 )
                                 Spacer(modifier = Modifier.height(16.dp))
                                 Text(
-                                    text = "Tidak ada hasil untuk \"${state.searchQuery}\"",
+                                    text = "Tidak ada hasil untuk \"\"",
                                     style = typography.bodyLarge,
                                     color = colors.textSecondary
                                 )

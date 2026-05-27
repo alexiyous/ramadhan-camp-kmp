@@ -15,6 +15,8 @@ fun RamadhanAlertDialog(
     title: String,
     confirmButtonText: String,
     dismissButtonText: String? = null,
+    confirmButtonVariant: RamadhanButtonProps.Variant = RamadhanButtonProps.Variant.Tertiary,
+    dismissButtonVariant: RamadhanButtonProps.Variant = RamadhanButtonProps.Variant.Tertiary,
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
     modifier: Modifier = Modifier,
@@ -27,7 +29,7 @@ fun RamadhanAlertDialog(
         titleContentColor = RamadhanTheme.colors.textPrimary,
         confirmButton = {
             RamadhanButton(
-                variant = RamadhanButtonProps.Variant.Tertiary,
+                variant = confirmButtonVariant,
                 text = confirmButtonText,
                 onClick = onConfirm
             )
@@ -35,7 +37,7 @@ fun RamadhanAlertDialog(
         dismissButton = {
             dismissButtonText?.let {
                 RamadhanButton(
-                    variant = RamadhanButtonProps.Variant.Tertiary,
+                    variant = dismissButtonVariant,
                     text = it,
                     onClick = onDismiss
                 )

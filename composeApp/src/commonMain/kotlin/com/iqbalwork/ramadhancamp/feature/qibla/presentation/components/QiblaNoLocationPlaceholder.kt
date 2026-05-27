@@ -12,6 +12,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.iqbalwork.ramadhancamp.shared.common.ui.components.button.RamadhanButton
+import com.iqbalwork.ramadhancamp.shared.common.ui.components.button.RamadhanButtonProps
 import com.iqbalwork.ramadhancamp.shared.common.ui.theme.RamadhanTheme
 
 @Composable
@@ -50,14 +52,11 @@ fun QiblaNoLocationPlaceholder(
             textAlign = TextAlign.Center
         )
         Spacer(Modifier.height(24.dp))
-        Button(
+        RamadhanButton(
             onClick = onRequestPermission,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = colors.accentPrimary,
-                contentColor = colors.textOnLight
-            )
-        ) {
-            Text("Request Permission")
-        }
+            variant = RamadhanButtonProps.Variant.Primary,
+            text = "Request Permission",
+            size = RamadhanButtonProps.Size.Middle
+        )
     }
 }

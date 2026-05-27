@@ -1,6 +1,7 @@
 ﻿package com.iqbalwork.ramadhancamp.feature.bookmark.presentation.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -83,12 +85,15 @@ fun BookmarkCard(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(accentColor.copy(alpha = 0.1f))
+                                .widthIn(max = 150.dp)
                                 .padding(horizontal = 10.dp, vertical = 4.dp)
                         ) {
                             Text(
                                 text = categoryName.uppercase(),
                                 style = typography.labelSmall,
-                                color = accentColor
+                                color = accentColor,
+                                maxLines = 1,
+                                modifier = Modifier.basicMarquee()
                             )
                         }
 
