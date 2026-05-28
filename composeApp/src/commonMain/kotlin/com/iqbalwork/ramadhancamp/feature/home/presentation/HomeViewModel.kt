@@ -1,4 +1,4 @@
-﻿package com.iqbalwork.ramadhancamp.feature.home.presentation
+package com.iqbalwork.ramadhancamp.feature.home.presentation
 
 import androidx.lifecycle.viewModelScope
 import com.iqbalwork.ramadhancamp.feature.home.domain.repository.HomeRepository
@@ -52,7 +52,6 @@ class HomeViewModel(
             .onFailure {
                 updateState { copy(
                     appError = it.toAppError(),
-                    emptyErrorState = null
                 ) }
             }
             .onSuccess {
@@ -61,7 +60,6 @@ class HomeViewModel(
                         popularSurahList = it.map { surah -> surah.toSurahUi() }
                     ),
                     appError = null,
-                    emptyErrorState = null
                 ) }
             }
     }
@@ -159,12 +157,17 @@ class HomeViewModel(
 
     private suspend fun getShalatSchedule(province: String, city: String) {
         homeRepository.getShalatSchedule(province, city)
+            .onSuccess {
+                updateState {
+                    copy(isLoading = false, appError = null, emptyErrorState = null)
+                }
+            }
             .onFailure {
                 navigationManager.navigateTo(TabDestination.HomeLocationPicker, withReplace = true)
+                updateState {
+                    copy(isLoading = false)
+                }
             }
-        updateState {
-            copy(isLoading = false, appError = null, emptyErrorState = null)
-        }
     }
 
     override fun handleEvent(event: HomeEvent) {
