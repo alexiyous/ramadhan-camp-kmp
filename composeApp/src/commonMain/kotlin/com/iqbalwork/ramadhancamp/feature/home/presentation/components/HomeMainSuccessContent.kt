@@ -27,7 +27,8 @@ fun HomeMainSuccessContent(
     modifier: Modifier = Modifier,
     onSearchBoxClicked: () -> Unit,
     onLastSurahCardClick: () -> Unit,
-    onPopularSurahClick: (Int) -> Unit
+    onPopularSurahClick: (Int) -> Unit,
+    onAboutClick: () -> Unit = {},
 ) {
     Column(
         modifier = modifier
@@ -38,6 +39,7 @@ fun HomeMainSuccessContent(
             greetingText = stringResource(Res.string.home_main_header_greeting),
             city = homeMainData.city,
             country = homeMainData.country,
+            onAboutClick = onAboutClick,
         )
         
         CardNextPrayer(

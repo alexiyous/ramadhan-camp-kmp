@@ -1,4 +1,4 @@
-package com.iqbalwork.ramadhancamp.feature.home.presentation
+﻿package com.iqbalwork.ramadhancamp.feature.home.presentation
 
 import androidx.lifecycle.viewModelScope
 import com.iqbalwork.ramadhancamp.feature.home.domain.repository.HomeRepository
@@ -207,6 +207,7 @@ class HomeViewModel(
                     )
                 }
             }
+            HomeEvent.NavigateToAbout -> navigationManager.navigateToInsideTab(TabDestination.About)
         }
     }
 }

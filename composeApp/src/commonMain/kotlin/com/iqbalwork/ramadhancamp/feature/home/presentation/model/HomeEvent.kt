@@ -9,4 +9,5 @@ sealed interface HomeEvent: UiEvent {
     data object OnSearchBoxClicked: HomeEvent
     data object OnLastSurahClicked : HomeEvent
     data class OnPopularSurahClicked(val surahId: Int) : HomeEvent
+    data object NavigateToAbout: HomeEvent
 }

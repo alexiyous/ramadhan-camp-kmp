@@ -1,9 +1,11 @@
-package com.iqbalwork.ramadhancamp.feature.home.presentation.route
+﻿package com.iqbalwork.ramadhancamp.feature.home.presentation.route
 
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
+import com.iqbalwork.ramadhancamp.feature.about.presentation.AboutScreen
+import com.iqbalwork.ramadhancamp.feature.about.presentation.OssLicensesScreen
 import com.iqbalwork.ramadhancamp.feature.home.presentation.HomeMainScreen
 import com.iqbalwork.ramadhancamp.feature.home.presentation.HomeMainScreenParameters
 import com.iqbalwork.ramadhancamp.feature.home.presentation.locationpicker.LocationPickerScreen
@@ -29,5 +31,7 @@ object HomeTab : FeatureTab() {
     override fun EntryProviderScope<NavKey>.registerEntries() {
         entry<TabDestination.HomeMain>           { HomeMainScreen(parameters = it.param) }
         entry<TabDestination.HomeLocationPicker> { LocationPickerScreen() }
+        entry<TabDestination.About>              { AboutScreen() }
+        entry<TabDestination.OssLicenses>        { OssLicensesScreen() }
     }
 }

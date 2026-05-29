@@ -33,6 +33,9 @@ sealed interface TabDestination : NavKey {
     @Serializable data object QiblaMain      : TabDestination
     // Bookmark
     @Serializable data object BookmarkMain      : TabDestination
+    // About
+    @Serializable data object About : TabDestination
+    @Serializable data object OssLicenses : TabDestination
 }
 
 @Serializable
@@ -53,6 +56,8 @@ val appSavedStateConfig = SavedStateConfiguration {
             subclass(TabDestination.QuranDetail::class,       TabDestination.QuranDetail.serializer())
             subclass(TabDestination.QiblaMain::class,         TabDestination.QiblaMain.serializer())
             subclass(TabDestination.BookmarkMain::class,      TabDestination.BookmarkMain.serializer())
+            subclass(TabDestination.About::class,             TabDestination.About.serializer())
+            subclass(TabDestination.OssLicenses::class,       TabDestination.OssLicenses.serializer())
             subclass(DialogDestination.QuranSheet::class,     DialogDestination.QuranSheet.serializer())
             subclass(DialogDestination.BookmarkCreateCategory::class, DialogDestination.BookmarkCreateCategory.serializer())
         }

@@ -1,4 +1,4 @@
-<resources>
+﻿<resources>
     <string name="retry">Coba Lagi</string>
 
     <string name="error_critical_title">Ada sesuatu yang rusak</string>
@@ -36,5 +36,16 @@
     <string name="next_uppercase">BERIKUTNYA</string>
     <string name="pilih">Pilih</string>
     <string name="batal">Batal</string>
+
+    <string name="about_title">Tentang</string>
+    <string name="about_content_description">Tentang</string>
+    <string name="about_app_name">RamadhanCamp</string>
+    <string name="about_version">Versi %1$s</string>
+    <string name="about_copyright">© 2026 Alexius Andrianno Alfa Renanta</string>
+    <string name="about_license">CC BY-NC-ND 4.0</string>
+    <string name="about_equran_attribution">Data shalat disediakan oleh eQuran.id</string>
+    <string name="about_oss_licenses">Lisensi Open Source</string>
+    <string name="oss_licenses_title">Lisensi Open Source</string>
+    <string name="oss_licenses_by">oleh %1$s</string>
 
 </resources>

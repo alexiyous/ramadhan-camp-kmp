@@ -68,7 +68,8 @@ fun HomeMainScreenContent(
                     },
                     onPopularSurahClick = { surahId ->
                         action(HomeEvent.OnPopularSurahClicked(surahId))
-                    }
+                    },
+                    onAboutClick = { action(HomeEvent.NavigateToAbout) }
                 )
             }
         }
