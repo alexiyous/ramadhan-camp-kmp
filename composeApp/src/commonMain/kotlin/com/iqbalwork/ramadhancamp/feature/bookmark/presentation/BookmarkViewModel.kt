@@ -1,4 +1,4 @@
-package com.iqbalwork.ramadhancamp.feature.bookmark.presentation
+﻿package com.iqbalwork.ramadhancamp.feature.bookmark.presentation
 
 import androidx.lifecycle.viewModelScope
 import com.iqbalwork.ramadhancamp.feature.bookmark.domain.repository.BookmarkRepository
@@ -38,6 +38,7 @@ class BookmarkViewModel(
     init {
         loadCategories()
         observeBookmarks()
+        observeNewestBookmark()
     }
 
     private fun loadCategories() {
@@ -77,6 +78,15 @@ class BookmarkViewModel(
             .onEach { bookmarks ->
                 Napier.d(tag = TAG_BOOKMARK_FTS) { "onEach received ${bookmarks.size} bookmarks" }
                 updateState { copy(bookmarks = bookmarks) }
+            }
+            .launchIn(viewModelScope)
+    }
+
+    private fun observeNewestBookmark() {
+        bookmarkRepository.getAllBookmarks()
+            .onEach { bookmarks ->
+                val newestId = bookmarks.firstOrNull()?.id
+                updateState { copy(newestBookmarkId = newestId) }
             }
             .launchIn(viewModelScope)
     }

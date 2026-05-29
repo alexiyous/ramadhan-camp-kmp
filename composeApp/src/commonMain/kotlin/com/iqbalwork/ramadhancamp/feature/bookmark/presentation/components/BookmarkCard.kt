@@ -1,4 +1,4 @@
-﻿package com.iqbalwork.ramadhancamp.feature.bookmark.presentation.components
+package com.iqbalwork.ramadhancamp.feature.bookmark.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
@@ -39,6 +39,7 @@ fun BookmarkCard(
     bookmark: Bookmark,
     categoryName: String,
     categoryColor: Long,
+    isNewest: Boolean = false,
     onClick: () -> Unit,
     onBookmarkClick: () -> Unit = {}
 ) {
@@ -98,11 +99,13 @@ fun BookmarkCard(
                         }
 
                         // Timestamp
-                        Text(
-                            text = "Baru ditambahkan",
-                            style = typography.labelSmall,
-                            color = colors.textMuted
-                        )
+                        if (isNewest) {
+                            Text(
+                                text = "Baru ditambahkan",
+                                style = typography.labelSmall,
+                                color = colors.textMuted
+                            )
+                        }
                     }
 
                     // Bookmark icon (tappable to delete)

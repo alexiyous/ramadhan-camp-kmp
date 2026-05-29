@@ -267,6 +267,7 @@ fun BookmarkContent(
                                     bookmark = bookmark,
                                     categoryName = category?.name ?: "Unknown",
                                     categoryColor = category?.color ?: 0xFF4ADE80L,
+                                    isNewest = bookmark.id == state.newestBookmarkId,
                                     onClick = { action(BookmarkEvent.OnBookmarkClick(bookmark)) },
                                     onBookmarkClick = { action(BookmarkEvent.OnDeleteBookmarkClicked(bookmark)) }
                                 )
