@@ -51,10 +51,18 @@ class PrayViewModel(
         try {
             params.permissionController?.providePermission(Permission.REMOTE_NOTIFICATION)
         } catch (_: DeniedAlwaysException) {
-            sendEffect(PrayEffect.ShowPermissionsDeniedDialog)
+            updateState { copy(isNotificationPermissionDenied = true) }
         }
-        catch (_: DeniedException) {}
-        catch (_: RequestCanceledException) {}
+        catch (_: DeniedException) {
+            updateState { copy(isNotificationPermissionDenied = true) }
+        }
+        catch (_: RequestCanceledException) {
+            updateState { copy(isNotificationPermissionDenied = true) }
+        }
+    }
+
+    private suspend fun checkNotificationPermission(): Boolean {
+        return permissionController?.isPermissionGranted(Permission.REMOTE_NOTIFICATION) ?: false
     }
 
     private suspend fun initPraySchedule() {
@@ -92,8 +100,13 @@ class PrayViewModel(
                     formatPattern = DateFormatPattern.SHORT_DAY_DATE_MONTH_YEAR))
                 else loadTodaySchedule()
             }
-
             PrayEvent.GoToSetting -> goToDeviceSettings()
+            PrayEvent.CheckNotificationPermission -> viewModelScope.launch {
+                if (!state.value.isNotificationPermissionDenied) return@launch
+                val isGranted = checkNotificationPermission()
+                if (!isGranted) return@launch
+                updateState { copy(isNotificationPermissionDenied = false) }
+            }
         }
     }
 
@@ -147,4 +160,3 @@ class PrayViewModel(
             }
     }
 }
-

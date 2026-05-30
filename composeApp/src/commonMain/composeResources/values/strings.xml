@@ -48,5 +48,7 @@
     <string name="about_oss_licenses">Lisensi Open Source</string>
     <string name="oss_licenses_title">Lisensi Open Source</string>
     <string name="oss_licenses_by">oleh %1$s</string>
+    <string name="error_notification_permission_denied_title">Izin Notifikasi Diperlukan</string>
+    <string name="error_notification_permission_denied_message">Aktifkan izin notifikasi untuk mendapatkan pengingat waktu sholat tepat waktu.</string>
 
 </resources>

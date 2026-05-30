@@ -9,4 +9,5 @@ sealed interface PrayEvent : UiEvent {
     data class ToggleAlarm(val prayerKey: Prayers, val enabled: Boolean) : PrayEvent
     data object RetryLoadSchedule : PrayEvent
     data object GoToSetting : PrayEvent
+    data object CheckNotificationPermission : PrayEvent
 }

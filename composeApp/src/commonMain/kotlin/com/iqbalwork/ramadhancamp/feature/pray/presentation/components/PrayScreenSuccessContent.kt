@@ -22,7 +22,6 @@ import androidx.compose.ui.unit.dp
 import com.iqbalwork.ramadhancamp.feature.pray.domain.model.Prayers
 import com.iqbalwork.ramadhancamp.feature.pray.presentation.model.PrayCountdownUiModel
 import com.iqbalwork.ramadhancamp.feature.pray.presentation.model.PrayItemUiModel
-import com.iqbalwork.ramadhancamp.shared.common.ui.components.dialog.RamadhanAlertDialog
 import com.iqbalwork.ramadhancamp.shared.common.ui.theme.RamadhanTheme
 import kotlinx.datetime.LocalDate
 
@@ -30,7 +29,6 @@ import kotlinx.datetime.LocalDate
 @Composable
 fun PrayScreenSuccessContent(
     modifier: Modifier = Modifier,
-    showPermissionDialog: Boolean ,
     currentCity: String,
     currentCountry: String,
     selectedDate: String,
@@ -38,8 +36,6 @@ fun PrayScreenSuccessContent(
     prayers: List<PrayItemUiModel>,
     onAlarmClicked: (key: Prayers, enabled: Boolean) -> Unit,
     onDateSelect: (date: LocalDate) -> Unit,
-    onPermissionCancel: () -> Unit,
-    onPermissionConfirm: () -> Unit
 ) {
     var showDatePicker by rememberSaveable { mutableStateOf(false) }
 
@@ -89,23 +85,11 @@ fun PrayScreenSuccessContent(
             }
         )
     }
-
-    if (showPermissionDialog)
-        RamadhanAlertDialog(
-            text = "Tolong aktifkan izin notifikasi untuk mendapatkan pengingat waktu sholat tepat waktu.",
-            title = "Aktifkan Izin Notifikasi",
-            confirmButtonText = "Pengaturan",
-            dismissButtonText = "Batal",
-            onDismiss = onPermissionCancel,
-            onConfirm = onPermissionConfirm
-        )
 }
 
 @Preview
 @Composable
 private fun PrayScreenSuccessContentPreview() {
-    val showPermissionDialog by rememberSaveable { mutableStateOf(false) }
-
     val dummyPrayers = listOf(
         PrayItemUiModel(Prayers.SUBUH, "Fajr", "04:30", Icons.Default.Notifications, isNextPrayer = false, isAlarmOn = true),
         PrayItemUiModel(Prayers.DZUHUR, "Dhuhr", "11:45", Icons.Default.Notifications, isNextPrayer = true, isAlarmOn = false),
@@ -136,9 +120,6 @@ private fun PrayScreenSuccessContentPreview() {
                 onAlarmClicked = { _, _ -> },
                 onDateSelect = {},
                 currentCountry = "Indonesia",
-                showPermissionDialog = showPermissionDialog,
-                onPermissionCancel = {},
-                onPermissionConfirm = {}
             )
         }
     }
@@ -147,8 +128,6 @@ private fun PrayScreenSuccessContentPreview() {
 @Preview
 @Composable
 private fun PrayScreenSuccessContentNoCountdownPreview() {
-    val showPermissionDialog by rememberSaveable { mutableStateOf(false) }
-
     val dummyPrayers = listOf(
         PrayItemUiModel(Prayers.SUBUH, "Fajr", "04:30", Icons.Default.Notifications, isNextPrayer = false, isAlarmOn = true),
         PrayItemUiModel(Prayers.DZUHUR, "Dhuhr", "11:45", Icons.Default.Notifications, isNextPrayer = false, isAlarmOn = false),
@@ -168,9 +147,6 @@ private fun PrayScreenSuccessContentNoCountdownPreview() {
                 onAlarmClicked = { _, _ -> },
                 onDateSelect = {},
                 currentCountry = "Indonesia",
-                showPermissionDialog = showPermissionDialog,
-                onPermissionCancel = {},
-                onPermissionConfirm = {}
             )
         }
     }

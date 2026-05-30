@@ -14,5 +14,6 @@ data class PrayState(
     val selectedDate: String = "",
     val countdown: PrayCountdownUiModel? = null,
     val prayers: List<PrayItemUiModel> = emptyList(),
-    val error: AppError? = null
+    val error: AppError? = null,
+    val isNotificationPermissionDenied: Boolean = false
 )

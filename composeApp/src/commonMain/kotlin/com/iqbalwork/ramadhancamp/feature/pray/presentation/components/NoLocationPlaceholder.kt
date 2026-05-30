@@ -21,7 +21,7 @@ import ramadhancamp.composeapp.generated.resources.shalat_schedule_not_avail
 
 @Composable
 fun NoLocationPlaceholder(
-    onSettingsClick: () -> Unit,
+    onSettingsClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val colors = RamadhanTheme.colors
@@ -55,6 +55,7 @@ fun NoLocationPlaceholder(
             textAlign = TextAlign.Center
         )
         Spacer(Modifier.height(24.dp))
+        if (onSettingsClick != null)
         RamadhanButton(
             onClick = onSettingsClick,
             variant = RamadhanButtonProps.Variant.Primary,
