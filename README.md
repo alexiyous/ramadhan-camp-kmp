@@ -71,6 +71,13 @@ The Prayer tab displays a live countdown timer to the next prayer (e.g., _01:38:
 All five daily prayers — **Subuh, Dzuhur, Ashar, Maghrib, Isya** — are listed with their scheduled times and per-prayer alarm toggles.
 A date picker lets you check past or future schedules at a glance.
 
+<details>
+<summary>🎬 Watch Adzan Notification Demo</summary>
+
+<video src="docs/assets/videos/pray_time_notif.webm" autoplay loop muted playsinline width="280"></video>
+
+</details>
+
 ---
 
 ### 📖 Quran
@@ -108,6 +115,13 @@ The **ayat bottom sheet** (_Pilihan Ayat_) gives you instant access to:
 
 Saved ayats show a **"Tersimpan di bookmark"** badge.
 
+<details>
+<summary>🎬 Watch Ayat Share Demo</summary>
+
+<video src="docs/assets/videos/quran_ayat_share.mp4" autoplay loop muted playsinline width="280"></video>
+
+</details>
+
 <table>
   <tr>
     <td align="center"><b>Audio Player</b></td>
@@ -124,7 +138,7 @@ The floating audio player bar shows the **Now Playing** surah and ayat, reciter 
 <details>
 <summary>🎬 Watch Audio Playback Demo</summary>
 
-<video src="docs/assets/videos/quran_audio_playback.mp4" autoplay loop muted playsinline width="280"></video>
+<video src="docs/assets/videos/quran_audio_playback.webm" autoplay loop muted playsinline width="280"></video>
 
 </details>
 
@@ -173,6 +187,13 @@ The **"Ayat Favorit"** tab organizes your saved ayats with:
 - **Full-text search** — FTS-powered instant search across all bookmarks
 - **Create new playlist** — bottom sheet with name input and color palette
 - **Delete** — remove individual bookmarks or entire categories
+
+<details>
+<summary>🎬 Watch Bookmark Navigation & Copy Demo</summary>
+
+<video src="docs/assets/videos/quran_bookmark_nav_and_copy_ayat.mp4" autoplay loop muted playsinline width="280"></video>
+
+</details>
 
 ---
 
